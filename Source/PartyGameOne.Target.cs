@@ -11,5 +11,5 @@ public class PartyGameOneTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
 		ExtraModuleNames.Add("PartyGameOne");
-	}
+    }
 }
