@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "WebSocketGameInstance.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,6 +109,13 @@ void APartyGameOneCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+	}
+
+	UWebSocketGameInstance* GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
+	if (GameInstance) {
+		if (GameInstance->WebSocket->IsConnected()) {
+			GameInstance->WebSocket->Send("Moving in Unreal");
+		}
 	}
 }
 
