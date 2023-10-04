@@ -111,12 +111,12 @@ void APartyGameOneCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
 
-	UWebSocketGameInstance* GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
+	/*UWebSocketGameInstance* GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
 	if (GameInstance) {
 		if (GameInstance->WebSocket->IsConnected()) {
 			GameInstance->WebSocket->Send("Moving in Unreal");
 		}
-	}
+	}*/
 }
 
 void APartyGameOneCharacter::Look(const FInputActionValue& Value)

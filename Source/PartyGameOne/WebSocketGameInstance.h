@@ -19,5 +19,9 @@ public:
 	virtual void Init() override;
 	virtual void Shutdown() override;
 
+	FString GetJsonChildrenString(TSharedPtr<FJsonObject> JsonObject, FString ParentVariableString, FString ChildVariableString);
+	void SendJsonObject(TSharedPtr<FJsonObject>& JsonObject);
 	TSharedPtr<IWebSocket> WebSocket;
+
+	TArray<FString> AllPlayerIds;
 };

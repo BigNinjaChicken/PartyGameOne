@@ -1,0 +1,58 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Pawn.h"
+#include "StartScreenUserWidget.h"
+#include "GameOnePawn.generated.h"
+
+UENUM(BlueprintType)
+enum class EGameState : uint8
+{
+    JoinGame,
+    Tutorial
+};
+
+UCLASS()
+class PARTYGAMEONE_API AGameOnePawn : public APawn
+{
+    GENERATED_BODY()
+
+public:
+    // Sets default values for this pawn's properties
+    AGameOnePawn();
+
+protected:
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
+
+private:
+    // Function to handle the OnConnected event
+    void OnWebSocketConnected();
+
+    class UWebSocketGameInstance* GameInstance;
+
+    bool bWebSocketConnectedHasRun = false;
+
+    void OnWebSocketRecieveMessage(const FString& MessageString);
+
+public:
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
+
+    // Called to bind functionality to input
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    UPROPERTY(EditAnywhere, Category = UI)
+    TSubclassOf<class UStartScreenUserWidget> StartScreenUserWidget;
+    UStartScreenUserWidget* WidgetInstance;
+
+    UPROPERTY(BlueprintReadOnly, Category = State)
+    EGameState CurrentGameState = EGameState::JoinGame;
+    TMap<FString, bool> PlayerReadyMap;
+
+    UPROPERTY(EditAnywhere, Category = UI)
+    int32 MinPlayerCount = 2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+    TSoftObjectPtr<UWorld> TutorialLevel;
+};
