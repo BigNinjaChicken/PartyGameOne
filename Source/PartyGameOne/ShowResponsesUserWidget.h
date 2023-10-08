@@ -19,5 +19,8 @@ class PARTYGAMEONE_API UShowResponsesUserWidget : public UUserWidget
 public:
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
-    void ShowPrompts(AGameOneTalkBoxPawn* TalkBoxPawn);
+    void ShowPrompts(const AGameOneTalkBoxPawn* TalkBoxPawn);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = State)
+    int index = 0;
 };

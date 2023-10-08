@@ -40,6 +40,28 @@ struct FGamePrompts
 	FString FragmentTwoPlayerId;
 };
 
+USTRUCT(BlueprintType)
+struct FPoleVoteTotals
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int Option1Votes = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int Option2Votes = 0;
+
+	void Reset()
+	{
+		Option1Votes = 0;
+		Option2Votes = 0;
+	}
+
+	int TotalVotes() {
+		return Option1Votes + Option2Votes;
+	}
+};
+
 UCLASS()
 class PARTYGAMEONE_API AGameOneTalkBoxPawn : public APawn
 {
@@ -61,11 +83,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = UI)
     TSubclassOf<class UShowResponsesUserWidget> ShowResponcesUserWidget;
 
+	UPROPERTY(EditAnywhere, Category = UI)
+    TSubclassOf<class UShowAllGoupResponsesUserWidget> ShowAllGoupResponsesUserWidget;
+
 	UTimerUserWidget* TimerWidgetInstance;
 	UShowResponsesUserWidget* ShowResponcesWidgetInstance;
+	UShowAllGoupResponsesUserWidget* ShowAllGoupResponsesWidgetInstance;
 
 	class UWebSocketGameInstance* GameInstance;
-
+	TArray<FString> AllPlayerIds;
 
 public:	
 	// Called every frame
@@ -74,10 +100,15 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void StartGame();
+	void SendPlayersSentenceFragments();
 
 	void EndRound();
 	void OnWebSocketRecieveMessage(const FString& MessageString);
+
+	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
+
+	void ReceivedPlayerPromptResponces(TSharedPtr<FJsonObject> JsonObject, FString clientId);
+
 	TArray<FEncapsule> SentencePossibilities;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
 	TArray<FGamePrompts> AllGamePrompts;
@@ -87,5 +118,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
     TMap<FString, bool> PlayerReadinessMap;
+
+	UFUNCTION(BlueprintCallable)
+	void SendPlayerPole(const FGamePrompts& GamePrompts);
+
+	FPoleVoteTotals CurrentPoleVoteTotals;
+	
+	int32 TotalOptionsInputed = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+    TSoftObjectPtr<UWorld> ScoreboardLevel;
 };
 template<typename Type> static void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);

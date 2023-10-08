@@ -7,9 +7,20 @@
 #include <IWebSocket.h>
 #include "WebSocketGameInstance.generated.h"
 
-/**
- * 
- */
+
+
+USTRUCT(BlueprintType)
+struct FPlayerInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString PlayerName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int Score = 0;
+};
+
 UCLASS()
 class PARTYGAMEONE_API UWebSocketGameInstance : public UGameInstance
 {
@@ -23,5 +34,7 @@ public:
 	void SendJsonObject(TSharedPtr<FJsonObject>& JsonObject);
 	TSharedPtr<IWebSocket> WebSocket;
 
-	TArray<FString> AllPlayerIds;
+	// Key: Player Id
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<FString, FPlayerInfo> AllPlayerInfo;
 };

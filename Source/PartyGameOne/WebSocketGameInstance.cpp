@@ -14,7 +14,8 @@ void UWebSocketGameInstance::Init()
 		FModuleManager::Get().LoadModule("WebSockets");
 	}
 
-	WebSocket = FWebSocketsModule::Get().CreateWebSocket("ws://localhost:8080");
+	// WebSocket = FWebSocketsModule::Get().CreateWebSocket("ws://localhost:8080");
+	WebSocket = FWebSocketsModule::Get().CreateWebSocket("wss://partygame-399004.uk.r.appspot.com");
 
 	WebSocket->OnConnected().AddLambda([]()
 		{

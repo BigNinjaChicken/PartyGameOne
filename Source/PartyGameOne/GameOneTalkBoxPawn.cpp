@@ -6,6 +6,8 @@
 #include "JsonUtilities.h"
 #include "WebSocketGameInstance.h"
 #include "ShowResponsesUserWidget.h"
+#include "ShowAllGoupResponsesUserWidget.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AGameOneTalkBoxPawn::AGameOneTalkBoxPawn()
@@ -25,6 +27,8 @@ void AGameOneTalkBoxPawn::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Failed to get GameInstance"));
 		return;
 	}
+
+	GameInstance->AllPlayerInfo.GetKeys(AllPlayerIds);
 
 	CreateSentencePossibility("The dragon", "until the warrior suddenly");
 	CreateSentencePossibility("My ex-wife", "the other day, now I'm");
@@ -47,10 +51,11 @@ void AGameOneTalkBoxPawn::BeginPlay()
 	UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *TimerUserWidget);
 	CreatedWidgetInstance->AddToViewport();
 	TimerWidgetInstance = Cast<UTimerUserWidget>(CreatedWidgetInstance);
+	TimerWidgetInstance->StartTimer(30.0f);
 
 	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &AGameOneTalkBoxPawn::EndRound, 30.0f, false);
-	TimerWidgetInstance->StartTimer(30.0f);
-	StartGame();
+	
+	SendPlayersSentenceFragments();
 }
 
 void AGameOneTalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString FragmentTwo)
@@ -74,16 +79,13 @@ void AGameOneTalkBoxPawn::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AGameOneTalkBoxPawn::StartGame() {
+void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
 	// Check if the GameInstance is valid
 	if (!GameInstance) {
 		UE_LOG(LogTemp, Error, TEXT("GameInstance is not valid."));
 		return;
 	}
 
-	GetWorld()->GetTimerManager().ClearTimer(GameTimerHandle);
-
-	TArray<FString> AllPlayerIds = GameInstance->AllPlayerIds;
 	FRandomStream RandomStream;
 	ShuffleArray(RandomStream, AllPlayerIds);
 
@@ -139,7 +141,7 @@ void AGameOneTalkBoxPawn::EndRound() {
 }
 
 void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString) {
-	// Convert the FString to a JSON object
+	// Create JSON object to be sent out
 	TSharedPtr<FJsonObject> JsonObject;
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(MessageString);
 
@@ -156,6 +158,95 @@ void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString
 		return;
 	}
 
+	uint64 option;
+	if (JsonObject->TryGetNumberField(TEXT("option"), option))
+	{
+		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentOnePlayerId].Score += 300;
+		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentTwoPlayerId].Score += 300;
+		TotalOptionsInputed++;
+
+		if (TotalOptionsInputed == GameInstance->AllPlayerInfo.Num()) {
+			if (ScoreboardLevel.IsNull()) {
+				UE_LOG(LogTemp, Error, TEXT("Invalid ScoreboardLevel"));
+				return;
+			}
+			UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ScoreboardLevel);
+			return;
+		}
+
+		return;
+	}
+
+	ReceivedPlayerPromptResponces(JsonObject, clientId);
+
+	RecievedPlayerPoleVote(JsonObject);
+}
+
+void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
+{
+	FString poleSelection;
+	if (JsonObject->TryGetStringField(TEXT("poleSelection"), poleSelection))
+	{
+		if (poleSelection == "Option1") {
+			CurrentPoleVoteTotals.Option1Votes++;
+			GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentOnePlayerId].Score += 200;
+		}
+		else if (poleSelection == "Option2") {
+			CurrentPoleVoteTotals.Option2Votes++;
+			GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentTwoPlayerId].Score += 200;
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Invalid Option"))
+		}
+
+		if (CurrentPoleVoteTotals.TotalVotes() == AllPlayerIds.Num()) {
+			// All players have submitted a vote
+			ShowResponcesWidgetInstance->index++;
+			ShowResponcesWidgetInstance->ShowPrompts(this); // Display next prompt
+
+			if (ShowResponcesWidgetInstance->index == AllGamePrompts.Num()) {
+				if (!ShowAllGoupResponsesUserWidget) {
+					UE_LOG(LogTemp, Error, TEXT("ShowAllGoupResponsesUserWidget null"));
+					return;
+				}
+
+				// Display All Responses Pole
+				UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ShowAllGoupResponsesUserWidget);
+				ShowResponcesWidgetInstance->RemoveFromViewport();
+				CreatedWidgetInstance->AddToViewport();
+				ShowAllGoupResponsesWidgetInstance = Cast<UShowAllGoupResponsesUserWidget>(CreatedWidgetInstance);
+				ShowAllGoupResponsesWidgetInstance->ShowPrompts(this);
+
+				TSharedPtr<FJsonObject> JsonObjectAllFragments = MakeShareable(new FJsonObject);
+				for (int32 i = 0; i < AllGamePrompts.Num(); ++i) {
+					FGamePrompts GamePrompts = AllGamePrompts[i];
+
+					FString PromptFragmentOneKey = FString::Printf(TEXT("promptFragmentOne%d"), i);
+					FString PromptFragmentOneResponceKey = FString::Printf(TEXT("PromptFragmentOneResponce%d"), i);
+					FString PromptFragmentOnePlayerIdKey = FString::Printf(TEXT("promptFragmentOnePlayerId%d"), i);
+					FString PromptFragmentTwoKey = FString::Printf(TEXT("promptFragmentTwo%d"), i);
+					FString PromptFragmentTwoResponceKey = FString::Printf(TEXT("PromptFragmentTwoResponceKey%d"), i);
+					FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
+
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, GamePrompts.SentenceFragments.SentenceFragmentOne);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, GamePrompts.SentenceFragments.SentenceFragmentOneResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOnePlayerIdKey, GamePrompts.FragmentOnePlayerId);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, GamePrompts.SentenceFragments.SentenceFragmentTwo);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, GamePrompts.SentenceFragments.SentenceFragmentTwoResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentTwoPlayerId);
+				}
+
+				JsonObjectAllFragments->SetBoolField("ShowAllPrompts", true);
+				GameInstance->SendJsonObject(JsonObjectAllFragments);
+			}
+		}
+
+		return;
+	}
+}
+
+void AGameOneTalkBoxPawn::ReceivedPlayerPromptResponces(TSharedPtr<FJsonObject> JsonObject, FString clientId)
+{
 	FString userInputPromptOne;
 	if (JsonObject->TryGetStringField(TEXT("userInputPromptOne"), userInputPromptOne))
 	{
@@ -203,11 +294,21 @@ void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString
 			TimerWidgetInstance->RemoveFromViewport();
 			CreatedWidgetInstance->AddToViewport();
 			ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-			ShowResponcesWidgetInstance->ShowPrompts(this); 
+			ShowResponcesWidgetInstance->ShowPrompts(this);
 		}
 
 		return;
 	}
+}
+
+void AGameOneTalkBoxPawn::SendPlayerPole(const FGamePrompts& GamePrompts)
+{
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	JsonObject->SetStringField("Option1", GamePrompts.SentenceFragments.SentenceFragmentOneResponce);
+	JsonObject->SetStringField("Option2", GamePrompts.SentenceFragments.SentenceFragmentTwoResponce);
+	GameInstance->SendJsonObject(JsonObject);
+
+	CurrentPoleVoteTotals.Reset();
 }
 
 template<typename Type>

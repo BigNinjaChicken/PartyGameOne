@@ -133,7 +133,10 @@ void AGameOnePawn::OnWebSocketRecieveMessage(const FString& MessageString)
                     WidgetInstance->AddPlayer(PlayerName);
                     PlayerReadyMap.Add(PlayerName, false); // Not Ready Yet
 
-                    GameInstance->AllPlayerIds.Add(GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "clientId"));
+                    FPlayerInfo NewPlayerInfo;
+                    NewPlayerInfo.PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
+                    FString PlayerId = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "clientId");
+                    GameInstance->AllPlayerInfo.Add(PlayerId, NewPlayerInfo);
                 }
             }
         }
