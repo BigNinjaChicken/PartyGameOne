@@ -222,10 +222,10 @@ void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObj
 					FGamePrompts GamePrompts = AllGamePrompts[i];
 
 					FString PromptFragmentOneKey = FString::Printf(TEXT("promptFragmentOne%d"), i);
-					FString PromptFragmentOneResponceKey = FString::Printf(TEXT("PromptFragmentOneResponce%d"), i);
+					FString PromptFragmentOneResponceKey = FString::Printf(TEXT("promptFragmentOneResponce%d"), i);
 					FString PromptFragmentOnePlayerIdKey = FString::Printf(TEXT("promptFragmentOnePlayerId%d"), i);
 					FString PromptFragmentTwoKey = FString::Printf(TEXT("promptFragmentTwo%d"), i);
-					FString PromptFragmentTwoResponceKey = FString::Printf(TEXT("PromptFragmentTwoResponceKey%d"), i);
+					FString PromptFragmentTwoResponceKey = FString::Printf(TEXT("promptFragmentTwoResponce%d"), i);
 					FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
 
 					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, GamePrompts.SentenceFragments.SentenceFragmentOne);
