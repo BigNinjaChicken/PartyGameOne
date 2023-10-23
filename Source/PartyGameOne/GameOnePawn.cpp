@@ -80,7 +80,7 @@ void AGameOnePawn::OnWebSocketRecieveMessage(const FString& MessageString)
 
             FString PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
             if (PlayerName.IsEmpty()) {
-                UE_LOG(LogTemp, Warning, TEXT("Invalid Player Name"));
+                UE_LOG(LogTemp, Error, TEXT("Invalid Player Name"));
                 return;
             }
             
@@ -95,12 +95,12 @@ void AGameOnePawn::OnWebSocketRecieveMessage(const FString& MessageString)
                     FString PlayerName2 = PlayerEntry.Key;
                     bool IsReady = PlayerEntry.Value;
 
-                    UE_LOG(LogTemp, Log, TEXT("PlayerName: %s, IsReady: %s"), *PlayerName2, IsReady ? TEXT("True") : TEXT("False"));
+                    UE_LOG(LogTemp, Warning, TEXT("PlayerName: %s, IsReady: %s"), *PlayerName2, IsReady ? TEXT("True") : TEXT("False"));
                 }
 
                 // Don't start unless enough players
                 if (PlayerReadyMap.Num() < MinPlayerCount) {
-                    UE_LOG(LogTemp, Error, TEXT("Invalid Player Count"));
+                    UE_LOG(LogTemp, Warning, TEXT("Invalid Player Count"));
                     return;
                 }
 

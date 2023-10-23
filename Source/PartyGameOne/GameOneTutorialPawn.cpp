@@ -4,6 +4,8 @@
 #include "GameOneTutorialPawn.h"
 #include <Engine/World.h>
 #include <Kismet/GameplayStatics.h>
+#include <Dom/JsonObject.h>
+#include "WebSocketGameInstance.h"
 
 // Sets default values
 AGameOneTutorialPawn::AGameOneTutorialPawn()
@@ -18,8 +20,18 @@ void AGameOneTutorialPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+
+	GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
+	if (!GameInstance) {
+		UE_LOG(LogTemp, Error, TEXT("Failed to get GameInstance"));
+		return;
+	}
+
 	GetWorld()->GetTimerManager().SetTimer(TutorialTimerHandle, this, &AGameOneTutorialPawn::StartGame, 2.0f, false);
-	
+
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	JsonObject->SetStringField("Stage", "Tutorial");
+	GameInstance->SendJsonObject(JsonObject);
 }
 
 // Called every frame

@@ -105,9 +105,17 @@ public:
 	void EndRound();
 	void OnWebSocketRecieveMessage(const FString& MessageString);
 
+	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
+
 	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
 
-	void ReceivedPlayerPromptResponces(TSharedPtr<FJsonObject> JsonObject, FString clientId);
+	void PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId);
+
+	void PromptReadyUp(FString clientId);
+
+	void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId);
+
+	float InputPromptTime = 50.0f;
 
 	TArray<FEncapsule> SentencePossibilities;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
@@ -116,8 +124,7 @@ public:
 	UPROPERTY()
 	FTimerHandle GameTimerHandle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
-    TMap<FString, bool> PlayerReadinessMap;
+	int ReadyPlayerCount = 0;
 
 	UFUNCTION(BlueprintCallable)
 	void SendPlayerPole(const FGamePrompts& GamePrompts);

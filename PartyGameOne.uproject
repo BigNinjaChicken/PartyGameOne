@@ -23,14 +23,6 @@
 			]
 		},
 		{
-			"Name": "Firebase",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [
-				"Android",
-				"IOS"
-			]
-		},
-		{
 			"Name": "WebAPI",
 			"Enabled": true
 		},

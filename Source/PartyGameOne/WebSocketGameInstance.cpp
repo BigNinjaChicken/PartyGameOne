@@ -14,32 +14,33 @@ void UWebSocketGameInstance::Init()
 		FModuleManager::Get().LoadModule("WebSockets");
 	}
 
-	// WebSocket = FWebSocketsModule::Get().CreateWebSocket("ws://localhost:8080");
-	WebSocket = FWebSocketsModule::Get().CreateWebSocket("wss://party-game-web-service.onrender.com");
+	WebSocket = FWebSocketsModule::Get().CreateWebSocket("ws://localhost:8080");
+	// WebSocket = FWebSocketsModule::Get().CreateWebSocket("wss://party-game-web-service.onrender.com");
 
 	WebSocket->OnConnected().AddLambda([]()
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Successfully Connected");
+			UE_LOG(LogTemp, Warning, TEXT("Successfully Connected"));
 		});
 
 	WebSocket->OnConnectionError().AddLambda([](const FString& Error)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Error);
+			UE_LOG(LogTemp, Error, TEXT("Connection Error: %s"), *Error);
 		});
 
 	WebSocket->OnClosed().AddLambda([](int32 StatusCode, const FString& Reason, bool bWasClean)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, bWasClean ? FColor::Green : FColor::Red, "Connection Closed: " + Reason);
+			FColor MessageColor = bWasClean ? FColor::Green : FColor::Red;
+			UE_LOG(LogTemp, Warning, TEXT("Connection Closed: %s"), *Reason);
 		});
 
 	WebSocket->OnMessage().AddLambda([](const FString& MessageString)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Cyan, "Received Message: " + MessageString);
+			UE_LOG(LogTemp, Warning, TEXT("Received Message: %s"), *MessageString);
 		});
 
 	WebSocket->OnMessageSent().AddLambda([](const FString& MessageString)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Sent Message: " + MessageString);
+			UE_LOG(LogTemp, Warning, TEXT("Sent Message: %s"), *MessageString);
 		});
 
 	WebSocket->Connect();

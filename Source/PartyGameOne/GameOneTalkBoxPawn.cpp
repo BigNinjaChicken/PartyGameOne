@@ -51,10 +51,14 @@ void AGameOneTalkBoxPawn::BeginPlay()
 	UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *TimerUserWidget);
 	CreatedWidgetInstance->AddToViewport();
 	TimerWidgetInstance = Cast<UTimerUserWidget>(CreatedWidgetInstance);
-	TimerWidgetInstance->StartTimer(30.0f);
+	TimerWidgetInstance->StartTimer(InputPromptTime);
 
-	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &AGameOneTalkBoxPawn::EndRound, 30.0f, false);
-	
+	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &AGameOneTalkBoxPawn::EndRound, InputPromptTime, false);
+
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	JsonObject->SetStringField("Stage", "TalkBox");
+	GameInstance->SendJsonObject(JsonObject);
+
 	SendPlayersSentenceFragments();
 }
 
@@ -100,7 +104,8 @@ void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
 	AllGamePrompts.Empty(); // Clear the array
 	// Generate game prompts for each player
 	for (int32 i = 0; i < NumPlayers; i++) {
-		FEncapsule SentenceElement = SentencePossibilities[FMath::RandRange(0, SentencePossibilities.Num() - 1)];
+		int index = FMath::RandRange(0, SentencePossibilities.Num() - 1);
+		FEncapsule SentenceElement = SentencePossibilities[index];
 
 		FGamePrompts Item;
 		Item.FragmentOnePlayerId = AllPlayerIds[i];
@@ -108,9 +113,9 @@ void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
 		Item.SentenceFragments = SentenceElement;
 
 		AllGamePrompts.Add(Item);
-		SentencePossibilities.RemoveAtSwap(FMath::RandRange(0, SentencePossibilities.Num() - 1), 1, false);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Successfully Connected");
+		SentencePossibilities.RemoveAt(index);
 	}
+
 	// Send Game Prompts
 	for (int32 i = 0; i < NumPlayers; i++) {
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
@@ -124,14 +129,8 @@ void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
 		JsonObject->SetStringField("promptTwoFragmentTwo", AllGamePrompts[(i + 1) % NumPlayers].SentenceFragments.SentenceFragmentTwo);
 		JsonObject->SetStringField("promptTwoFragmentTwoPlayerId", AllGamePrompts[(i + 1) % NumPlayers].FragmentTwoPlayerId);
 
-		JsonObject->SetStringField("clientId", AllPlayerIds[i]);
+		JsonObject->SetStringField("clientId", AllGamePrompts[i].FragmentTwoPlayerId); // Fix Play-Test
 		GameInstance->SendJsonObject(JsonObject);
-	}
-
-	// Create a duplicate readiness map for the ready up stage
-	for (const FString& PlayerId : AllPlayerIds)
-	{
-		PlayerReadinessMap.Add(PlayerId, false);
 	}
 }
 
@@ -158,6 +157,17 @@ void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString
 		return;
 	}
 
+	ReceivePlayerAllPoleVote(JsonObject);
+
+	PromptResponceUserInputPromptOne(JsonObject, clientId);
+
+	PromptResponceUserInputPromptTwo(JsonObject, clientId);
+
+	RecievedPlayerPoleVote(JsonObject);
+}
+
+void AGameOneTalkBoxPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject)
+{
 	uint64 option;
 	if (JsonObject->TryGetNumberField(TEXT("option"), option))
 	{
@@ -173,13 +183,7 @@ void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString
 			UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ScoreboardLevel);
 			return;
 		}
-
-		return;
 	}
-
-	ReceivedPlayerPromptResponces(JsonObject, clientId);
-
-	RecievedPlayerPoleVote(JsonObject);
 }
 
 void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
@@ -217,6 +221,10 @@ void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObj
 				ShowAllGoupResponsesWidgetInstance = Cast<UShowAllGoupResponsesUserWidget>(CreatedWidgetInstance);
 				ShowAllGoupResponsesWidgetInstance->ShowPrompts(this);
 
+				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+				JsonObject->SetStringField("Stage", "ShowAllPole");
+				GameInstance->SendJsonObject(JsonObject);
+
 				TSharedPtr<FJsonObject> JsonObjectAllFragments = MakeShareable(new FJsonObject);
 				for (int32 i = 0; i < AllGamePrompts.Num(); ++i) {
 					FGamePrompts GamePrompts = AllGamePrompts[i];
@@ -228,15 +236,15 @@ void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObj
 					FString PromptFragmentTwoResponceKey = FString::Printf(TEXT("promptFragmentTwoResponce%d"), i);
 					FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
 
-					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, GamePrompts.SentenceFragments.SentenceFragmentOne);
-					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, GamePrompts.SentenceFragments.SentenceFragmentOneResponce);
+					FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, SentenceFragments.SentenceFragmentOne);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, SentenceFragments.SentenceFragmentOneResponce);
 					JsonObjectAllFragments->SetStringField(PromptFragmentOnePlayerIdKey, GamePrompts.FragmentOnePlayerId);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, GamePrompts.SentenceFragments.SentenceFragmentTwo);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, GamePrompts.SentenceFragments.SentenceFragmentTwoResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, SentenceFragments.SentenceFragmentTwo);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, SentenceFragments.SentenceFragmentTwoResponce);
 					JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentTwoPlayerId);
 				}
 
-				JsonObjectAllFragments->SetBoolField("ShowAllPrompts", true);
 				GameInstance->SendJsonObject(JsonObjectAllFragments);
 			}
 		}
@@ -245,67 +253,95 @@ void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObj
 	}
 }
 
-void AGameOneTalkBoxPawn::ReceivedPlayerPromptResponces(TSharedPtr<FJsonObject> JsonObject, FString clientId)
+void AGameOneTalkBoxPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId)
 {
 	FString userInputPromptOne;
 	if (JsonObject->TryGetStringField(TEXT("userInputPromptOne"), userInputPromptOne))
 	{
-		for (FGamePrompts& GamePrompt : AllGamePrompts) {
-			if (clientId == GamePrompt.FragmentOnePlayerId) {
-				GamePrompt.SentenceFragments.SentenceFragmentOneResponce = userInputPromptOne;
-			}
+		if (userInputPromptOne.IsEmpty()) {
+			return;
 		}
 
-		return;
+		FString promptOneFragmentOne;
+		JsonObject->TryGetStringField(TEXT("promptOneFragmentOne"), promptOneFragmentOne);
+
+		FString promptTwoFragmentOne;
+		JsonObject->TryGetStringField(TEXT("promptTwoFragmentOne"), promptTwoFragmentOne);
+
+		for (FGamePrompts& GamePrompt : AllGamePrompts) {
+			if (clientId == GamePrompt.FragmentOnePlayerId &&
+				(promptOneFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentOne ||
+					promptTwoFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentOne)) {
+				UE_LOG(LogTemp, Warning, TEXT("userInputPromptOne Submitted"));
+				GamePrompt.SentenceFragments.SentenceFragmentOneResponce = userInputPromptOne;
+				break;
+			}
+		}
 	}
 
+	PromptReadyUp(clientId);
+}
+
+void AGameOneTalkBoxPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId)
+{
 	FString userInputPromptTwo;
 	if (JsonObject->TryGetStringField(TEXT("userInputPromptTwo"), userInputPromptTwo))
 	{
-		for (FGamePrompts& GamePrompt : AllGamePrompts) {
-			if (clientId == GamePrompt.FragmentTwoPlayerId) {
-				GamePrompt.SentenceFragments.SentenceFragmentTwoResponce = userInputPromptTwo;
-			}
+		if (userInputPromptTwo.IsEmpty()) {
+			return;
+		}
+	}
+
+	FString promptOneFragmentTwo;
+	JsonObject->TryGetStringField(TEXT("promptOneFragmentTwo"), promptOneFragmentTwo);
+
+	FString promptTwoFragmentTwo;
+	JsonObject->TryGetStringField(TEXT("promptTwoFragmentTwo"), promptTwoFragmentTwo);
+
+	for (FGamePrompts& GamePrompt : AllGamePrompts) {
+		if (clientId == GamePrompt.FragmentTwoPlayerId &&
+			(promptOneFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentTwo ||
+				promptTwoFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentTwo)) {
+			UE_LOG(LogTemp, Warning, TEXT("userInputPromptTwo Submitted"));
+			GamePrompt.SentenceFragments.SentenceFragmentTwoResponce = userInputPromptTwo;
+			break;
+		}
+	}
+
+	PromptReadyUp(clientId);
+}
+
+void AGameOneTalkBoxPawn::PromptReadyUp(FString clientId)
+{
+	ReadyPlayerCount++;
+
+	// ReadyPlayerCount should be twice the number of players due to double submissions
+	if (ReadyPlayerCount == GameInstance->AllPlayerInfo.Num() * 2)
+	{
+		// All players are ready
+		if (!ShowResponcesUserWidget) {
+			UE_LOG(LogTemp, Error, TEXT("Failed to create the widget instance."));
+			return;
 		}
 
+		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+		JsonObject->SetStringField("Stage", "Pole");
+		GameInstance->SendJsonObject(JsonObject);
 
-		// Ready Up
-		PlayerReadinessMap.Add(clientId, true);
-
-		bool bAreAllPlayersReady = true;
-		for (const auto& Pair : PlayerReadinessMap)
-		{
-			if (!Pair.Value)
-			{
-				bAreAllPlayersReady = false;
-				break; // Break the loop as soon as a player is not ready
-			}
-		}
-
-		if (bAreAllPlayersReady)
-		{
-			// All players are ready (true)
-			if (!ShowResponcesUserWidget) {
-				UE_LOG(LogTemp, Error, TEXT("Failed to create the widget instance."));
-				return;
-			}
-
-			UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ShowResponcesUserWidget);
-			TimerWidgetInstance->RemoveFromViewport();
-			CreatedWidgetInstance->AddToViewport();
-			ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-			ShowResponcesWidgetInstance->ShowPrompts(this);
-		}
-
-		return;
+		UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ShowResponcesUserWidget);
+		TimerWidgetInstance->RemoveFromViewport();
+		CreatedWidgetInstance->AddToViewport();
+		ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
+		ShowResponcesWidgetInstance->ShowPrompts(this);
 	}
 }
 
 void AGameOneTalkBoxPawn::SendPlayerPole(const FGamePrompts& GamePrompts)
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-	JsonObject->SetStringField("Option1", GamePrompts.SentenceFragments.SentenceFragmentOneResponce);
-	JsonObject->SetStringField("Option2", GamePrompts.SentenceFragments.SentenceFragmentTwoResponce);
+	FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
+	JsonObject->SetStringField("Option1", SentenceFragments.SentenceFragmentOneResponce);
+	JsonObject->SetStringField("Option2", SentenceFragments.SentenceFragmentTwoResponce);
 	GameInstance->SendJsonObject(JsonObject);
 
 	CurrentPoleVoteTotals.Reset();

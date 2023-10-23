@@ -32,4 +32,6 @@ public:
 	void StartGame();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> TalkBoxLevel;
+
+	class UWebSocketGameInstance* GameInstance;
 };
