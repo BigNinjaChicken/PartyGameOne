@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GameOneTalkBoxPawn.h"
+#include "TalkBoxPawn.h"
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
@@ -19,7 +19,7 @@ class PARTYGAMEONE_API UShowResponsesUserWidget : public UUserWidget
 public:
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
-    void ShowPrompts(const AGameOneTalkBoxPawn* TalkBoxPawn);
+    void ShowPrompts(class ATalkBoxPawn* TalkBoxPawn);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = State)
     int index = 0;

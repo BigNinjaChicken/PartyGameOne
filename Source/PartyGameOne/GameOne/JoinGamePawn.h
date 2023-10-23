@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "StartScreenUserWidget.h"
-#include "GameOnePawn.generated.h"
+#include "JoinGamePawn.generated.h"
 
 UENUM(BlueprintType)
 enum class EGameState : uint8
@@ -13,13 +13,13 @@ enum class EGameState : uint8
 };
 
 UCLASS()
-class PARTYGAMEONE_API AGameOnePawn : public APawn
+class PARTYGAMEONE_API AJoinGamePawn : public APawn
 {
     GENERATED_BODY()
 
 public:
     // Sets default values for this pawn's properties
-    AGameOnePawn();
+    AJoinGamePawn();
 
 protected:
     // Called when the game starts or when spawned

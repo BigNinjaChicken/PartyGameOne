@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameOnePawn.h"
+#include "JoinGamePawn.h"
 #include "WebSocketGameInstance.h"
 #include "JsonUtilities.h"
 #include "StartScreenUserWidget.h"
 #include <Kismet/GameplayStatics.h>
 
 // Sets default values
-AGameOnePawn::AGameOnePawn()
+AJoinGamePawn::AJoinGamePawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -16,7 +16,7 @@ AGameOnePawn::AGameOnePawn()
 }
 
 // Called when the game starts or when spawned
-void AGameOnePawn::BeginPlay()
+void AJoinGamePawn::BeginPlay()
 {
     Super::BeginPlay();
 
@@ -26,8 +26,8 @@ void AGameOnePawn::BeginPlay()
         return;
     }
 
-    GameInstance->WebSocket->OnConnected().AddUObject(this, &AGameOnePawn::OnWebSocketConnected);
-	GameInstance->WebSocket->OnMessage().AddUObject(this, &AGameOnePawn::OnWebSocketRecieveMessage);
+    GameInstance->WebSocket->OnConnected().AddUObject(this, &AJoinGamePawn::OnWebSocketConnected);
+	GameInstance->WebSocket->OnMessage().AddUObject(this, &AJoinGamePawn::OnWebSocketRecieveMessage);
     if (GameInstance->WebSocket->IsConnected()) {
         OnWebSocketConnected();
     }
@@ -43,7 +43,7 @@ void AGameOnePawn::BeginPlay()
 
 }
 
-void AGameOnePawn::OnWebSocketConnected()
+void AJoinGamePawn::OnWebSocketConnected()
 {
     if (bWebSocketConnectedHasRun) {
         return;
@@ -57,7 +57,7 @@ void AGameOnePawn::OnWebSocketConnected()
     }
 }
 
-void AGameOnePawn::OnWebSocketRecieveMessage(const FString& MessageString)
+void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
 {
     // Convert the FString to a JSON object
     TSharedPtr<FJsonObject> JsonObject;
@@ -145,13 +145,13 @@ void AGameOnePawn::OnWebSocketRecieveMessage(const FString& MessageString)
 
 
 // Called every frame
-void AGameOnePawn::Tick(float DeltaTime)
+void AJoinGamePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
 // Called to bind functionality to input
-void AGameOnePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AJoinGamePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 

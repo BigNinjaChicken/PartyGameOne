@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "GameOneTalkBoxPawn.generated.h"
+#include "TalkBoxPawn.generated.h"
 
 USTRUCT(BlueprintType)
 struct FEncapsule
@@ -26,7 +26,7 @@ struct FEncapsule
 
 
 USTRUCT(BlueprintType)
-struct FGamePrompts
+struct FGamePrompt
 {
 	GENERATED_BODY()
 
@@ -63,13 +63,13 @@ struct FPoleVoteTotals
 };
 
 UCLASS()
-class PARTYGAMEONE_API AGameOneTalkBoxPawn : public APawn
+class PARTYGAMEONE_API ATalkBoxPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AGameOneTalkBoxPawn();
+	ATalkBoxPawn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -119,7 +119,7 @@ public:
 
 	TArray<FEncapsule> SentencePossibilities;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
-	TArray<FGamePrompts> AllGamePrompts;
+	TArray<FGamePrompt> AllGamePrompts;
 
 	UPROPERTY()
 	FTimerHandle GameTimerHandle;
@@ -127,7 +127,7 @@ public:
 	int ReadyPlayerCount = 0;
 
 	UFUNCTION(BlueprintCallable)
-	void SendPlayerPole(const FGamePrompts& GamePrompts);
+	void SendPlayerPole(const FGamePrompt& GamePrompts);
 
 	FPoleVoteTotals CurrentPoleVoteTotals;
 	

@@ -19,6 +19,8 @@ struct FPlayerInfo
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int Score = 0;
+
+	float ScoreMultiplier = 1.0f;
 };
 
 UCLASS()

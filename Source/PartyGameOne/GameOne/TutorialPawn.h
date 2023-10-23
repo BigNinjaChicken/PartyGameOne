@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "GameOneTutorialPawn.generated.h"
+#include "TutorialPawn.generated.h"
 
 UCLASS()
-class PARTYGAMEONE_API AGameOneTutorialPawn : public APawn
+class PARTYGAMEONE_API ATutorialPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	AGameOneTutorialPawn();
+	ATutorialPawn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,6 +32,9 @@ public:
 	void StartGame();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> TalkBoxLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+	float TutorialTotalTime = 2.0f;
 
 	class UWebSocketGameInstance* GameInstance;
 };

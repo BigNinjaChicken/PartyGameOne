@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "GameOneTalkBoxPawn.h"
+#include "TalkBoxPawn.h"
 #include "TimerUserWidget.h"
 #include "JsonUtilities.h"
 #include "WebSocketGameInstance.h"
@@ -10,7 +9,7 @@
 #include <Kismet/GameplayStatics.h>
 
 // Sets default values
-AGameOneTalkBoxPawn::AGameOneTalkBoxPawn()
+ATalkBoxPawn::ATalkBoxPawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -18,7 +17,7 @@ AGameOneTalkBoxPawn::AGameOneTalkBoxPawn()
 }
 
 // Called when the game starts or when spawned
-void AGameOneTalkBoxPawn::BeginPlay()
+void ATalkBoxPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -41,7 +40,7 @@ void AGameOneTalkBoxPawn::BeginPlay()
 	CreateSentencePossibility("I am going to", " and then I'm gonna");
 	CreateSentencePossibility("They had to ban", "after the incident when");
 
-	GameInstance->WebSocket->OnMessage().AddUObject(this, &AGameOneTalkBoxPawn::OnWebSocketRecieveMessage);
+	GameInstance->WebSocket->OnMessage().AddUObject(this, &ATalkBoxPawn::OnWebSocketRecieveMessage);
 
 	if (!TimerUserWidget) {
 		UE_LOG(LogTemp, Error, TEXT("Failed to create the widget instance."));
@@ -53,7 +52,7 @@ void AGameOneTalkBoxPawn::BeginPlay()
 	TimerWidgetInstance = Cast<UTimerUserWidget>(CreatedWidgetInstance);
 	TimerWidgetInstance->StartTimer(InputPromptTime);
 
-	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &AGameOneTalkBoxPawn::EndRound, InputPromptTime, false);
+	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &ATalkBoxPawn::EndRound, InputPromptTime, false);
 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	JsonObject->SetStringField("Stage", "TalkBox");
@@ -62,7 +61,7 @@ void AGameOneTalkBoxPawn::BeginPlay()
 	SendPlayersSentenceFragments();
 }
 
-void AGameOneTalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString FragmentTwo)
+void ATalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString FragmentTwo)
 {
 	FEncapsule Item;
 	Item.SentenceFragmentOne = FragmentOne;
@@ -71,19 +70,19 @@ void AGameOneTalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString
 }
 
 // Called every frame
-void AGameOneTalkBoxPawn::Tick(float DeltaTime)
+void ATalkBoxPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
 // Called to bind functionality to input
-void AGameOneTalkBoxPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ATalkBoxPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
+void ATalkBoxPawn::SendPlayersSentenceFragments() {
 	// Check if the GameInstance is valid
 	if (!GameInstance) {
 		UE_LOG(LogTemp, Error, TEXT("GameInstance is not valid."));
@@ -107,7 +106,7 @@ void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
 		int index = FMath::RandRange(0, SentencePossibilities.Num() - 1);
 		FEncapsule SentenceElement = SentencePossibilities[index];
 
-		FGamePrompts Item;
+		FGamePrompt Item;
 		Item.FragmentOnePlayerId = AllPlayerIds[i];
 		Item.FragmentTwoPlayerId = AllPlayerIds[(i + 1) % NumPlayers];
 		Item.SentenceFragments = SentenceElement;
@@ -135,11 +134,11 @@ void AGameOneTalkBoxPawn::SendPlayersSentenceFragments() {
 }
 
 
-void AGameOneTalkBoxPawn::EndRound() {
+void ATalkBoxPawn::EndRound() {
 
 }
 
-void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString) {
+void ATalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString) {
 	// Create JSON object to be sent out
 	TSharedPtr<FJsonObject> JsonObject;
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(MessageString);
@@ -166,7 +165,7 @@ void AGameOneTalkBoxPawn::OnWebSocketRecieveMessage(const FString& MessageString
 	RecievedPlayerPoleVote(JsonObject);
 }
 
-void AGameOneTalkBoxPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject)
+void ATalkBoxPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject)
 {
 	uint64 option;
 	if (JsonObject->TryGetNumberField(TEXT("option"), option))
@@ -186,7 +185,7 @@ void AGameOneTalkBoxPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonO
 	}
 }
 
-void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
+void ATalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
 {
 	FString poleSelection;
 	if (JsonObject->TryGetStringField(TEXT("poleSelection"), poleSelection))
@@ -227,7 +226,7 @@ void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObj
 
 				TSharedPtr<FJsonObject> JsonObjectAllFragments = MakeShareable(new FJsonObject);
 				for (int32 i = 0; i < AllGamePrompts.Num(); ++i) {
-					FGamePrompts GamePrompts = AllGamePrompts[i];
+					FGamePrompt GamePrompts = AllGamePrompts[i];
 
 					FString PromptFragmentOneKey = FString::Printf(TEXT("promptFragmentOne%d"), i);
 					FString PromptFragmentOneResponceKey = FString::Printf(TEXT("promptFragmentOneResponce%d"), i);
@@ -253,7 +252,7 @@ void AGameOneTalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObj
 	}
 }
 
-void AGameOneTalkBoxPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId)
+void ATalkBoxPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId)
 {
 	FString userInputPromptOne;
 	if (JsonObject->TryGetStringField(TEXT("userInputPromptOne"), userInputPromptOne))
@@ -268,7 +267,7 @@ void AGameOneTalkBoxPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObjec
 		FString promptTwoFragmentOne;
 		JsonObject->TryGetStringField(TEXT("promptTwoFragmentOne"), promptTwoFragmentOne);
 
-		for (FGamePrompts& GamePrompt : AllGamePrompts) {
+		for (FGamePrompt& GamePrompt : AllGamePrompts) {
 			if (clientId == GamePrompt.FragmentOnePlayerId &&
 				(promptOneFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentOne ||
 					promptTwoFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentOne)) {
@@ -282,7 +281,7 @@ void AGameOneTalkBoxPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObjec
 	PromptReadyUp(clientId);
 }
 
-void AGameOneTalkBoxPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId)
+void ATalkBoxPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId)
 {
 	FString userInputPromptTwo;
 	if (JsonObject->TryGetStringField(TEXT("userInputPromptTwo"), userInputPromptTwo))
@@ -298,7 +297,7 @@ void AGameOneTalkBoxPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObjec
 	FString promptTwoFragmentTwo;
 	JsonObject->TryGetStringField(TEXT("promptTwoFragmentTwo"), promptTwoFragmentTwo);
 
-	for (FGamePrompts& GamePrompt : AllGamePrompts) {
+	for (FGamePrompt& GamePrompt : AllGamePrompts) {
 		if (clientId == GamePrompt.FragmentTwoPlayerId &&
 			(promptOneFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentTwo ||
 				promptTwoFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentTwo)) {
@@ -311,7 +310,7 @@ void AGameOneTalkBoxPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObjec
 	PromptReadyUp(clientId);
 }
 
-void AGameOneTalkBoxPawn::PromptReadyUp(FString clientId)
+void ATalkBoxPawn::PromptReadyUp(FString clientId)
 {
 	ReadyPlayerCount++;
 
@@ -336,7 +335,7 @@ void AGameOneTalkBoxPawn::PromptReadyUp(FString clientId)
 	}
 }
 
-void AGameOneTalkBoxPawn::SendPlayerPole(const FGamePrompts& GamePrompts)
+void ATalkBoxPawn::SendPlayerPole(const FGamePrompt& GamePrompts)
 {
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
