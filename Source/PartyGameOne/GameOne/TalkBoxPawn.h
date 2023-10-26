@@ -22,6 +22,18 @@ struct FEncapsule
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString SentenceFragmentTwoResponce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString SentenceFragmentThree;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString SentenceFragmentThreeResponce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString SentenceFragmentFour;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString SentenceFragmentFourResponce;
 };
 
 
@@ -75,8 +87,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void CreateSentencePossibility(FString FragmentOne, FString FragmentTwo);
-
+	void CreateSentencePossibility(FString FragmentOne, FString FragmentTwo, FString FragmentThree, FString FragmentFour);
 	UPROPERTY(EditAnywhere, Category = UI)
     TSubclassOf<class UTimerUserWidget> TimerUserWidget;
 
@@ -103,6 +114,7 @@ public:
 	void SendPlayersSentenceFragments();
 
 	void EndRound();
+
 	void OnWebSocketRecieveMessage(const FString& MessageString);
 
 	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);

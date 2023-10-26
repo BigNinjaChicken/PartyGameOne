@@ -21,13 +21,13 @@ void ADrinkingBonusPawn::BeginPlay()
 {
     Super::BeginPlay();
 
-    GameInstance->WebSocket->OnMessage().AddUObject(this, &ADrinkingBonusPawn::OnWebSocketRecieveMessage);
-
     GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
     if (!GameInstance) {
         UE_LOG(LogTemp, Error, TEXT("Failed to get GameInstance"));
         return;
     }
+
+    GameInstance->WebSocket->OnMessage().AddUObject(this, &ADrinkingBonusPawn::OnWebSocketRecieveMessage);
 
     // Create a struct to store player info
     struct FPlayerInfo

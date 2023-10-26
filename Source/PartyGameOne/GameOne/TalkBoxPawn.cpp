@@ -29,16 +29,11 @@ void ATalkBoxPawn::BeginPlay()
 
 	GameInstance->AllPlayerInfo.GetKeys(AllPlayerIds);
 
-	CreateSentencePossibility("The dragon", "until the warrior suddenly");
-	CreateSentencePossibility("My ex-wife", "the other day, now I'm");
-	CreateSentencePossibility("Did you hear about", "? I've heard they");
-	CreateSentencePossibility("I pulled out some mints, when", "then my friends asked, ");
-	CreateSentencePossibility("I was walking when", "my dog suddenly");
-	CreateSentencePossibility("I could only have", "So I grabbed a giant");
-	CreateSentencePossibility("I had a great day", "Now I'm not allowed to");
-	CreateSentencePossibility("Only one day till", "then we gotta deal with");
-	CreateSentencePossibility("I am going to", " and then I'm gonna");
-	CreateSentencePossibility("They had to ban", "after the incident when");
+	CreateSentencePossibility("The dragon", "until the warrior suddenly", "My ex-wife", "the other day, now I'm");
+	CreateSentencePossibility("Did you hear about", "? I've heard they", "I pulled out some mints, when", "then my friends asked, ");
+	CreateSentencePossibility("I was walking when", "my dog suddenly", "I could only have", "So I grabbed a giant");
+	CreateSentencePossibility("I had a great day", "Now I'm not allowed to", "Only one day till", "then we gotta deal with");
+	CreateSentencePossibility("I am going to", " and then I'm gonna", "They had to ban", "after the incident when");
 
 	GameInstance->WebSocket->OnMessage().AddUObject(this, &ATalkBoxPawn::OnWebSocketRecieveMessage);
 
@@ -61,11 +56,13 @@ void ATalkBoxPawn::BeginPlay()
 	SendPlayersSentenceFragments();
 }
 
-void ATalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString FragmentTwo)
+void ATalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString FragmentTwo, FString FragmentThree, FString FragmentFour)
 {
 	FEncapsule Item;
 	Item.SentenceFragmentOne = FragmentOne;
 	Item.SentenceFragmentTwo = FragmentTwo;
+	Item.SentenceFragmentThree = FragmentThree;
+	Item.SentenceFragmentFour = FragmentFour;
 	SentencePossibilities.Add(Item);
 }
 
@@ -100,7 +97,6 @@ void ATalkBoxPawn::SendPlayersSentenceFragments() {
 		return;
 	}
 
-	AllGamePrompts.Empty(); // Clear the array
 	// Generate game prompts for each player
 	for (int32 i = 0; i < NumPlayers; i++) {
 		int index = FMath::RandRange(0, SentencePossibilities.Num() - 1);
@@ -220,9 +216,9 @@ void ATalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
 				ShowAllGoupResponsesWidgetInstance = Cast<UShowAllGoupResponsesUserWidget>(CreatedWidgetInstance);
 				ShowAllGoupResponsesWidgetInstance->ShowPrompts(this);
 
-				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-				JsonObject->SetStringField("Stage", "ShowAllPole");
-				GameInstance->SendJsonObject(JsonObject);
+				TSharedPtr<FJsonObject> JsonObjectBeingSent = MakeShareable(new FJsonObject);
+				JsonObjectBeingSent->SetStringField("Stage", "ShowAllPole");
+				GameInstance->SendJsonObject(JsonObjectBeingSent);
 
 				TSharedPtr<FJsonObject> JsonObjectAllFragments = MakeShareable(new FJsonObject);
 				for (int32 i = 0; i < AllGamePrompts.Num(); ++i) {
