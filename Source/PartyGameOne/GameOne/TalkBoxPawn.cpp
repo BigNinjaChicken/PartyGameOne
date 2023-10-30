@@ -111,6 +111,8 @@ void ATalkBoxPawn::SendPlayersSentenceFragments() {
 		SentencePossibilities.RemoveAt(index);
 	}
 
+	GameInstance->AllGamePrompts = AllGamePrompts;
+
 	// Send Game Prompts
 	for (int32 i = 0; i < NumPlayers; i++) {
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
@@ -201,7 +203,8 @@ void ATalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
 		if (CurrentPoleVoteTotals.TotalVotes() == AllPlayerIds.Num()) {
 			// All players have submitted a vote
 			ShowResponcesWidgetInstance->index++;
-			ShowResponcesWidgetInstance->ShowPrompts(this); // Display next prompt
+			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts); // Display next prompt
+			SendPlayerPole();
 
 			if (ShowResponcesWidgetInstance->index == AllGamePrompts.Num()) {
 				if (!ShowAllGoupResponsesUserWidget) {
@@ -214,7 +217,8 @@ void ATalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
 				ShowResponcesWidgetInstance->RemoveFromViewport();
 				CreatedWidgetInstance->AddToViewport();
 				ShowAllGoupResponsesWidgetInstance = Cast<UShowAllGoupResponsesUserWidget>(CreatedWidgetInstance);
-				ShowAllGoupResponsesWidgetInstance->ShowPrompts(this);
+				ShowAllGoupResponsesWidgetInstance->ShowPrompts(AllGamePrompts);
+				SendPlayerPole();
 
 				TSharedPtr<FJsonObject> JsonObjectBeingSent = MakeShareable(new FJsonObject);
 				JsonObjectBeingSent->SetStringField("Stage", "ShowAllPole");
@@ -327,14 +331,18 @@ void ATalkBoxPawn::PromptReadyUp(FString clientId)
 		TimerWidgetInstance->RemoveFromViewport();
 		CreatedWidgetInstance->AddToViewport();
 		ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-		ShowResponcesWidgetInstance->ShowPrompts(this);
+		ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts);
+		SendPlayerPole();
 	}
 }
 
-void ATalkBoxPawn::SendPlayerPole(const FGamePrompt& GamePrompts)
+void ATalkBoxPawn::SendPlayerPole()
 {
+	if (AllGamePrompts.Num() == ShowResponcesWidgetInstance->index) return;
+
+	const FGamePrompt& GamePrompt = AllGamePrompts[ShowResponcesWidgetInstance->index];
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-	FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
+	FEncapsule SentenceFragments = GamePrompt.SentenceFragments;
 	JsonObject->SetStringField("Option1", SentenceFragments.SentenceFragmentOneResponce);
 	JsonObject->SetStringField("Option2", SentenceFragments.SentenceFragmentTwoResponce);
 	GameInstance->SendJsonObject(JsonObject);

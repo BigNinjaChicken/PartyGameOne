@@ -5,9 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include <IWebSocket.h>
+#include "TalkBoxPawn.h"
 #include "WebSocketGameInstance.generated.h"
-
-
 
 USTRUCT(BlueprintType)
 struct FPlayerInfo
@@ -39,4 +38,5 @@ public:
 	// Key: Player Id
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FString, FPlayerInfo> AllPlayerInfo;
+	TArray<FGamePrompt> AllGamePrompts;
 };

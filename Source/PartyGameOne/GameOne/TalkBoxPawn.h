@@ -50,6 +50,12 @@ struct FGamePrompt
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString FragmentTwoPlayerId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString FragmentThreePlayerId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString FragmentFourPlayerId;
 };
 
 USTRUCT(BlueprintType)
@@ -138,8 +144,8 @@ public:
 
 	int ReadyPlayerCount = 0;
 
-	UFUNCTION(BlueprintCallable)
-	void SendPlayerPole(const FGamePrompt& GamePrompts);
+	// UFUNCTION(BlueprintCallable)
+	void SendPlayerPole();
 
 	FPoleVoteTotals CurrentPoleVoteTotals;
 	

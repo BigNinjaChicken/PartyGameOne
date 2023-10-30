@@ -18,8 +18,8 @@ class PARTYGAMEONE_API UShowResponsesUserWidget : public UUserWidget
 
 public:
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
-    void ShowPrompts(class ATalkBoxPawn* TalkBoxPawn);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
+    void ShowPrompts(const TArray<FGamePrompt>& AllGamePrompts, int32 ActNumber = 1);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = State)
     int index = 0;
