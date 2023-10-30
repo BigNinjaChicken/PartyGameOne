@@ -156,12 +156,12 @@ void ATalkBoxActThreePawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonOb
 					FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
 
 					FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
-					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, SentenceFragments.SentenceFragmentOne);
-					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, SentenceFragments.SentenceFragmentOneResponce);
-					JsonObjectAllFragments->SetStringField(PromptFragmentOnePlayerIdKey, GamePrompts.FragmentOnePlayerId);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, SentenceFragments.SentenceFragmentTwo);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, SentenceFragments.SentenceFragmentTwoResponce);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentTwoPlayerId);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, SentenceFragments.SentenceFragmentFive[0] + " " + SentenceFragments.SentenceFragmentFive[1]);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, SentenceFragments.SentenceFragmentFiveResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOnePlayerIdKey, GamePrompts.FragmentFivePlayerId);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, SentenceFragments.SentenceFragmentSix[0] + " " + SentenceFragments.SentenceFragmentSix[1]);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, SentenceFragments.SentenceFragmentSixResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentSixPlayerId);
 				}
 
 				GameInstance->SendJsonObject(JsonObjectAllFragments);
@@ -204,8 +204,10 @@ void ATalkBoxActThreePawn::SendPlayersSentenceFragments() {
 	}
 
 	for (FGamePrompt& GamePrompt : AllGamePrompts) {
+		GamePrompt.SentenceFragments.SentenceFragmentFive.SetNum(2);
 		GamePrompt.SentenceFragments.SentenceFragmentFive[0] = GamePrompt.SentenceFragments.SentenceFragmentOne;
 		GamePrompt.SentenceFragments.SentenceFragmentFive[1] = GamePrompt.SentenceFragments.SentenceFragmentOneResponce;
+		GamePrompt.SentenceFragments.SentenceFragmentSix.SetNum(2);
 		GamePrompt.SentenceFragments.SentenceFragmentSix[0] = GamePrompt.SentenceFragments.SentenceFragmentTwo;
 		GamePrompt.SentenceFragments.SentenceFragmentSix[1] = GamePrompt.SentenceFragments.SentenceFragmentTwoResponce;
 	}
@@ -331,7 +333,7 @@ void ATalkBoxActThreePawn::SendPlayerPole()
 }
 
 template<typename Type>
-static void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
+void ATalkBoxActThreePawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
 	const int32 LastIndex = Array.Num() - 1;
 
 	for (int32 i = 0; i <= LastIndex; i += 1) {

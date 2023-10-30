@@ -69,4 +69,6 @@ public:
 
 	UPROPERTY()
 	FTimerHandle GameTimerHandle;
+
+	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
 };

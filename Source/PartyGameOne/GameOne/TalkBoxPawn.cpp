@@ -111,8 +111,6 @@ void ATalkBoxPawn::SendPlayersSentenceFragments() {
 		SentencePossibilities.RemoveAt(index);
 	}
 
-	GameInstance->AllGamePrompts = AllGamePrompts;
-
 	// Send Game Prompts
 	for (int32 i = 0; i < NumPlayers; i++) {
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
@@ -177,6 +175,7 @@ void ATalkBoxPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject)
 				UE_LOG(LogTemp, Error, TEXT("Invalid ScoreboardLevel"));
 				return;
 			}
+			GameInstance->AllGamePrompts = AllGamePrompts;
 			UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ScoreboardLevel);
 			return;
 		}
@@ -351,7 +350,7 @@ void ATalkBoxPawn::SendPlayerPole()
 }
 
 template<typename Type>
-static void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
+void ATalkBoxPawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
 	const int32 LastIndex = Array.Num() - 1;
 
 	for (int32 i = 0; i <= LastIndex; i += 1) {

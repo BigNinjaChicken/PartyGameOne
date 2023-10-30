@@ -38,6 +38,7 @@ public:
 	void PromptReadyUp(FString clientId);
 
 	void SendPlayerPole();
+	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
 	int ReadyPlayerCount = 0;
 	TArray<FString> AllPlayerIds;
 

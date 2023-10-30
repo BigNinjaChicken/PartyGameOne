@@ -156,12 +156,12 @@ void ATalkBoxActTwoPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObje
 					FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
 
 					FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
-					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, SentenceFragments.SentenceFragmentOne);
-					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, SentenceFragments.SentenceFragmentOneResponce);
-					JsonObjectAllFragments->SetStringField(PromptFragmentOnePlayerIdKey, GamePrompts.FragmentOnePlayerId);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, SentenceFragments.SentenceFragmentTwo);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, SentenceFragments.SentenceFragmentTwoResponce);
-					JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentTwoPlayerId);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, SentenceFragments.SentenceFragmentThree);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOneResponceKey, SentenceFragments.SentenceFragmentThreeResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentOnePlayerIdKey, GamePrompts.FragmentThreePlayerId);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoKey, SentenceFragments.SentenceFragmentFour);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, SentenceFragments.SentenceFragmentFourResponce);
+					JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentFourPlayerId);
 				}
 
 				GameInstance->SendJsonObject(JsonObjectAllFragments);
@@ -320,7 +320,7 @@ void ATalkBoxActTwoPawn::SendPlayerPole()
 }
 
 template<typename Type>
-static void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
+void ATalkBoxActTwoPawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
 	const int32 LastIndex = Array.Num() - 1;
 
 	for (int32 i = 0; i <= LastIndex; i += 1) {

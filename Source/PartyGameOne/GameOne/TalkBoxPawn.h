@@ -165,6 +165,7 @@ public:
 	// UFUNCTION(BlueprintCallable)
 	void SendPlayerPole();
 
+	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
 	FPoleVoteTotals CurrentPoleVoteTotals;
 	
 	int32 TotalOptionsInputed = 0;
@@ -172,4 +173,3 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> ScoreboardLevel;
 };
-template<typename Type> static void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);

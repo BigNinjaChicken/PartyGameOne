@@ -19,7 +19,7 @@ AScoreboardActOnePawn::AScoreboardActOnePawn()
 void AScoreboardActOnePawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	OpenNextLevel();
 }
 
 // Called every frame
