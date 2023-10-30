@@ -134,7 +134,7 @@ void ATalkBoxActTwoPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObje
 
 				// Display All Responses Pole
 				UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ShowAllGoupResponsesUserWidget);
-				ShowResponcesWidgetInstance->RemoveFromViewport();
+				ShowResponcesWidgetInstance->RemoveFromParent();
 				CreatedWidgetInstance->AddToViewport();
 				ShowAllGoupResponsesWidgetInstance = Cast<UShowAllGoupResponsesUserWidget>(CreatedWidgetInstance);
 				ShowAllGoupResponsesWidgetInstance->ShowPrompts(AllGamePrompts);

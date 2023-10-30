@@ -50,11 +50,9 @@ void AJoinGamePawn::OnWebSocketConnected()
     }
     bWebSocketConnectedHasRun = true;
 
-    if (CurrentGameState == EGameState::JoinGame) {
-        TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-        JsonObject->SetStringField("gameType", "GameOne");
-        GameInstance->SendJsonObject(JsonObject);
-    }
+    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+    JsonObject->SetStringField("gameType", "GameOne");
+    GameInstance->SendJsonObject(JsonObject);
 }
 
 void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
@@ -63,82 +61,83 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
     TSharedPtr<FJsonObject> JsonObject;
     TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(MessageString);
 
-    if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+    if (!FJsonSerializer::Deserialize(JsonReader, JsonObject))
     {
-        if (CurrentGameState == EGameState::JoinGame) {
-            // Display Session Code
-            FString SessionCode;
-            if (JsonObject->TryGetStringField(TEXT("sessionCode"), SessionCode))
+        UE_LOG(LogTemp, Warning, TEXT("Deserialize Failed"))
+            return;
+    }
+
+    // Display Session Code
+    FString SessionCode;
+    if (JsonObject->TryGetStringField(TEXT("sessionCode"), SessionCode))
+    {
+        if (!WidgetInstance) {
+            UE_LOG(LogTemp, Error, TEXT("Invalid WidgetInstance"));
+            return;
+        }
+        WidgetInstance->SetSessionCode = FText::FromString(SessionCode);
+        return;
+    }
+
+    FString PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
+    if (PlayerName.IsEmpty())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid Player Name"));
+        return;
+    }
+
+    // Ready Up
+    bool bIsReady;
+    if (JsonObject->TryGetBoolField(TEXT("bIsReady"), bIsReady))
+    {
+        PlayerReadyMap.Add(PlayerName, bIsReady);
+
+        for (const auto& PlayerEntry : PlayerReadyMap)
+        {
+            FString PlayerName2 = PlayerEntry.Key;
+            bool IsReady = PlayerEntry.Value;
+
+            UE_LOG(LogTemp, Warning, TEXT("PlayerName: %s, IsReady: %s"), *PlayerName2, IsReady ? TEXT("True") : TEXT("False"));
+        }
+
+        // Don't start unless enough players
+        if (PlayerReadyMap.Num() < MinPlayerCount) {
+            UE_LOG(LogTemp, Warning, TEXT("Invalid Player Count"));
+            return;
+        }
+
+        // Check if everyone is ready
+        for (const auto& PlayerEntry : PlayerReadyMap)
+        {
+            if (!PlayerEntry.Value)
             {
-                if (!WidgetInstance) {
-                    UE_LOG(LogTemp, Error, TEXT("Invalid WidgetInstance"));
-                    return;
-                }
-                WidgetInstance->SetSessionCode = FText::FromString(SessionCode);
                 return;
             }
+        }
 
-            FString PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
-            if (PlayerName.IsEmpty()) {
-                UE_LOG(LogTemp, Error, TEXT("Invalid Player Name"));
-                return;
-            }
-            
-            // Ready Up
-            bool bIsReady;
-            if (JsonObject->TryGetBoolField(TEXT("bIsReady"), bIsReady))
-            {
-                PlayerReadyMap.Add(PlayerName, bIsReady);
+        if (TutorialLevel.IsNull()) {
+            UE_LOG(LogTemp, Error, TEXT("Invalid TutorialLevel"));
+            return;
+        }
+        UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TutorialLevel);
+        return;
+    }
 
-                for (const auto& PlayerEntry : PlayerReadyMap)
-                {
-                    FString PlayerName2 = PlayerEntry.Key;
-                    bool IsReady = PlayerEntry.Value;
+    bool bJoinedGame;
+    if (JsonObject->TryGetBoolField(TEXT("bJoinedGame"), bJoinedGame))
+    {
+        if (PlayerReadyMap.Contains(PlayerName)) {
+            return;
+        }
+        if (WidgetInstance)
+        {
+            WidgetInstance->AddPlayer(PlayerName);
+            PlayerReadyMap.Add(PlayerName, false); // Not Ready Yet
 
-                    UE_LOG(LogTemp, Warning, TEXT("PlayerName: %s, IsReady: %s"), *PlayerName2, IsReady ? TEXT("True") : TEXT("False"));
-                }
-
-                // Don't start unless enough players
-                if (PlayerReadyMap.Num() < MinPlayerCount) {
-                    UE_LOG(LogTemp, Warning, TEXT("Invalid Player Count"));
-                    return;
-                }
-
-                // Check if everyone is ready
-                for (const auto& PlayerEntry : PlayerReadyMap)
-                {
-                    if (!PlayerEntry.Value)
-                    {
-                        return;
-                    }
-                }
-
-                if (TutorialLevel.IsNull()) {
-                    UE_LOG(LogTemp, Error, TEXT("Invalid TutorialLevel"));
-                    return;
-                }
-				UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TutorialLevel);
-                CurrentGameState = EGameState::Tutorial;
-                return;
-            }
-
-            bool bJoinedGame;
-            if (JsonObject->TryGetBoolField(TEXT("bJoinedGame"), bJoinedGame))
-            {
-                if (PlayerReadyMap.Contains(PlayerName)) {
-                    return;
-                }
-                if (WidgetInstance)
-                {
-                    WidgetInstance->AddPlayer(PlayerName);
-                    PlayerReadyMap.Add(PlayerName, false); // Not Ready Yet
-
-                    FPlayerInfo NewPlayerInfo;
-                    NewPlayerInfo.PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
-                    FString PlayerId = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "clientId");
-                    GameInstance->AllPlayerInfo.Add(PlayerId, NewPlayerInfo);
-                }
-            }
+            FPlayerInfo NewPlayerInfo;
+            NewPlayerInfo.PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
+            FString PlayerId = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "clientId");
+            GameInstance->AllPlayerInfo.Add(PlayerId, NewPlayerInfo);
         }
     }
 }

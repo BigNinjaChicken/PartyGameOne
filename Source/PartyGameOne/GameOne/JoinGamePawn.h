@@ -5,12 +5,12 @@
 #include "StartScreenUserWidget.h"
 #include "JoinGamePawn.generated.h"
 
-UENUM(BlueprintType)
+/*UENUM(BlueprintType)
 enum class EGameState : uint8
 {
     JoinGame,
     Tutorial
-};
+};*/
 
 UCLASS()
 class PARTYGAMEONE_API AJoinGamePawn : public APawn
@@ -45,9 +45,6 @@ public:
     UPROPERTY(EditAnywhere, Category = UI)
     TSubclassOf<class UStartScreenUserWidget> StartScreenUserWidget;
     UStartScreenUserWidget* WidgetInstance;
-
-    UPROPERTY(BlueprintReadOnly, Category = State)
-    EGameState CurrentGameState = EGameState::JoinGame;
     TMap<FString, bool> PlayerReadyMap;
 
     UPROPERTY(EditAnywhere, Category = UI)

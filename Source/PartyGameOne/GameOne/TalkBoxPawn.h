@@ -34,6 +34,18 @@ struct FEncapsule
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString SentenceFragmentFourResponce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FString> SentenceFragmentFive;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString SentenceFragmentFiveResponce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FString> SentenceFragmentSix;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString SentenceFragmentSixResponce;
 };
 
 
@@ -56,6 +68,12 @@ struct FGamePrompt
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString FragmentFourPlayerId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString FragmentFivePlayerId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString FragmentSixPlayerId;
 };
 
 USTRUCT(BlueprintType)
