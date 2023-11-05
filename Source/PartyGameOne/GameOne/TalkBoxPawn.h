@@ -141,6 +141,7 @@ public:
 
 	void OnWebSocketRecieveMessage(const FString& MessageString);
 
+	void UpdateScoreOnDevice(FString clientId);
 	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
 
 	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
@@ -151,7 +152,13 @@ public:
 
 	void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId);
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptTime = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+	float InputPromptSafetyTime = 2.0f;
+
+	bool bPostEnterPrompt = false;
+	int32 ReadyUpPostEnterPrompts = 0;
 
 	TArray<FEncapsule> SentencePossibilities;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
@@ -164,6 +171,8 @@ public:
 
 	// UFUNCTION(BlueprintCallable)
 	void SendPlayerPole();
+
+	int32 RoundEndReadyUpCount = 0;
 
 	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
 	FPoleVoteTotals CurrentPoleVoteTotals;

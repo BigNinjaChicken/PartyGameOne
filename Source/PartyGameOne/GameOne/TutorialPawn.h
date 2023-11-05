@@ -29,6 +29,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void CallSkipCommand(const TArray<FString>& Args, UWorld* World);
+	UFUNCTION()
 	void StartGame();
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> TalkBoxLevel;
@@ -37,4 +39,7 @@ public:
 	float TutorialTotalTime = 2.0f;
 
 	class UWebSocketGameInstance* GameInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+	bool bSkipTutorial;
 };

@@ -50,8 +50,13 @@ public:
     TSubclassOf<class UShowAllGoupResponsesUserWidget> ShowAllGoupResponsesUserWidget;
 	UShowAllGoupResponsesUserWidget* ShowAllGoupResponsesWidgetInstance;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptTime = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+	float InputPromptSafetyTime = 2.0f;
+
+	bool bPostEnterPrompt = false;
+	int32 ReadyUpPostEnterPrompts = 0;
 
 	class UWebSocketGameInstance* GameInstance;
 

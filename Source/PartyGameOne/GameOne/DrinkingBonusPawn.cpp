@@ -69,13 +69,14 @@ void ADrinkingBonusPawn::BeginPlay()
 
         int j = 0;
         for (const auto& PlayerInfo : GameInstance->AllPlayerInfo) {
-            int RandomOffset = FMath::RandRange(0, 4) / 10.0f; // Make it a decimal
+            float RawRandomOffset = FMath::RandRange(-0.2f, 0.2f);  // Generate a random float value in the range -0.2 to 0.2
+            float RoundedRandomOffset = FMath::RoundToFloat(RawRandomOffset * 10.0f) / 10.0f;  // Round to the nearest first decimal point
 
             if (PlayerInfo.Key == playerID) {
-                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(2.0f + RandomOffset));
+                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(2.0f + RoundedRandomOffset));
             }
             else {
-                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(3.0f + RandomOffset));
+                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(3.0f + RoundedRandomOffset));
             }
             JsonObject->SetStringField("PlayerName" + FString::FromInt(j), PlayerInfo.Value.PlayerName);
             JsonObject->SetStringField("PlayerID" + FString::FromInt(j), PlayerInfo.Key);

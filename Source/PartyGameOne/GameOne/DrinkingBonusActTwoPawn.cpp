@@ -39,11 +39,12 @@ void ADrinkingBonusActTwoPawn::BeginPlay()
     // Collect player info into an array
     TArray<FPlayerInfo> PlayerInfos;
 
-    for (const auto& PlayerInfo : GameInstance->AllPlayerInfo)
+    for (auto& PlayerInfo : GameInstance->AllPlayerInfo)
     {
         FPlayerInfo Info;
         Info.PlayerID = PlayerInfo.Key;
         Info.Score = PlayerInfo.Value.Score;
+        PlayerInfo.Value.ScoreMultiplier = 1.0f; // Reset Multiplier
         PlayerInfos.Add(Info);
     }
 
@@ -69,13 +70,14 @@ void ADrinkingBonusActTwoPawn::BeginPlay()
 
         int j = 0;
         for (const auto& PlayerInfo : GameInstance->AllPlayerInfo) {
-            float RandomOffset = FMath::RandRange(0.0f, 0.4f);
+            float RawRandomOffset = FMath::RandRange(-0.2f, 0.2f);  // Generate a random float value in the range -0.2 to 0.2
+            float RoundedRandomOffset = FMath::RoundToFloat(RawRandomOffset * 10.0f) / 10.0f;  // Round to the nearest first decimal point
 
             if (PlayerInfo.Key == playerID) {
-                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(1.3f + RandomOffset));
+                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(2.0f + RoundedRandomOffset));
             }
             else {
-                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(1.6f + RandomOffset));
+                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(3.0f + RoundedRandomOffset));
             }
             JsonObject->SetStringField("PlayerName" + FString::FromInt(j), PlayerInfo.Value.PlayerName);
             JsonObject->SetStringField("PlayerID" + FString::FromInt(j), PlayerInfo.Key);

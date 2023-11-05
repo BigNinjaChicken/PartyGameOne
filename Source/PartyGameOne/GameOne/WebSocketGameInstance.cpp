@@ -4,18 +4,27 @@
 #include "WebSocketGameInstance.h"
 #include "WebSocketsModule.h"
 #include "JsonUtilities.h"
+#include "HAL/IConsoleManager.h"
+#include "GameFramework/GameUserSettings.h" 
 
 
 void UWebSocketGameInstance::Init()
 {
 	Super::Init();
 
+	Command = IConsoleManager::Get().RegisterConsoleCommand(
+		TEXT("Skip"),
+		TEXT("Skip Current Scene"),
+		FConsoleCommandWithWorldAndArgsDelegate::CreateUObject(this, &UWebSocketGameInstance::OnCallSkipCommand),
+		ECVF_Cheat
+	);
+
 	if (!FModuleManager::Get().IsModuleLoaded("WebSockets")) {
 		FModuleManager::Get().LoadModule("WebSockets");
 	}
 
-	// WebSocket = FWebSocketsModule::Get().CreateWebSocket("ws://localhost:8080");
-	WebSocket = FWebSocketsModule::Get().CreateWebSocket("wss://party-game-web-service.onrender.com");
+	WebSocket = FWebSocketsModule::Get().CreateWebSocket("ws://localhost:8080");
+	// WebSocket = FWebSocketsModule::Get().CreateWebSocket("wss://party-game-web-service.onrender.com");
 
 	WebSocket->OnConnected().AddLambda([]()
 		{
@@ -57,6 +66,10 @@ void UWebSocketGameInstance::Shutdown()
 		WebSocket->Close();
 	}
 	Super::Shutdown();
+}
+
+void UWebSocketGameInstance::OnCallSkipCommand(const TArray<FString>& Args, UWorld* World)
+{
 }
 
 FString UWebSocketGameInstance::GetJsonChildrenString(TSharedPtr<FJsonObject> JsonObject, FString ParentVariableString, FString ChildVariableString)

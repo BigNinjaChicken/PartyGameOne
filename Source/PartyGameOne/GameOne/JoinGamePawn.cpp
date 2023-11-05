@@ -67,22 +67,10 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
             return;
     }
 
-    // Display Session Code
-    FString SessionCode;
-    if (JsonObject->TryGetStringField(TEXT("sessionCode"), SessionCode))
-    {
-        if (!WidgetInstance) {
-            UE_LOG(LogTemp, Error, TEXT("Invalid WidgetInstance"));
-            return;
-        }
-        WidgetInstance->SetSessionCode = FText::FromString(SessionCode);
-        return;
-    }
-
     FString PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
     if (PlayerName.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("Invalid Player Name"));
+        UE_LOG(LogTemp, Warning, TEXT("Invalid Player Name"));
         return;
     }
 

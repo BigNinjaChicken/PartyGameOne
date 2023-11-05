@@ -39,7 +39,7 @@ void ATalkBoxActTwoPawn::BeginPlay()
 	UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *TimerUserWidget);
 	CreatedWidgetInstance->AddToViewport();
 	TimerWidgetInstance = Cast<UTimerUserWidget>(CreatedWidgetInstance);
-	TimerWidgetInstance->StartTimer(InputPromptTime);
+	TimerWidgetInstance->StartTimer(InputPromptTime - InputPromptSafetyTime);
 
 	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &ATalkBoxActTwoPawn::EndRound, InputPromptTime, false);
 
@@ -48,6 +48,13 @@ void ATalkBoxActTwoPawn::BeginPlay()
 	GameInstance->SendJsonObject(JsonObject);
 
 	SendPlayersSentenceFragments();
+
+	for (auto Player : GameInstance->AllPlayerInfo) {
+		TSharedPtr<FJsonObject> JsonObjectTime = MakeShareable(new FJsonObject);
+		JsonObjectTime->SetStringField("Timer", FString::FromInt(InputPromptTime / Player.Value.ScoreMultiplier));
+		JsonObjectTime->SetStringField("clientId", Player.Key);
+		GameInstance->SendJsonObject(JsonObjectTime);
+	}
 }
 
 // Called every frame
@@ -173,7 +180,14 @@ void ATalkBoxActTwoPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObje
 }
 
 void ATalkBoxActTwoPawn::EndRound() {
+	GetWorld()->GetTimerManager().ClearTimer(GameTimerHandle);
 
+	ReadyUpPostEnterPrompts = true;
+	ReadyPlayerCount = 0;
+
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	JsonObject->SetStringField("Stage", "Pole");
+	GameInstance->SendJsonObject(JsonObject);
 }
 
 // Called to bind functionality to input
@@ -224,22 +238,21 @@ void ATalkBoxActTwoPawn::SendPlayersSentenceFragments() {
 void ATalkBoxActTwoPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId)
 {
 	FString userInputPromptOne;
-	if (JsonObject->TryGetStringField(TEXT("userInputPromptOne"), userInputPromptOne))
+	if (!JsonObject->TryGetStringField(TEXT("userInputPromptOne"), userInputPromptOne))
 	{
-		if (userInputPromptOne.IsEmpty()) {
-			return;
-		}
+		return;
+	}
 
-		FString promptOneFragmentOne;
-		JsonObject->TryGetStringField(TEXT("promptOneFragmentOne"), promptOneFragmentOne);
+	FString promptOneFragmentOne;
+	JsonObject->TryGetStringField(TEXT("promptOneFragmentOne"), promptOneFragmentOne);
 
-		FString promptTwoFragmentOne;
-		JsonObject->TryGetStringField(TEXT("promptTwoFragmentOne"), promptTwoFragmentOne);
+	FString promptTwoFragmentOne;
+	JsonObject->TryGetStringField(TEXT("promptTwoFragmentOne"), promptTwoFragmentOne);
 
-		for (FGamePrompt& GamePrompt : AllGamePrompts) {
-			if (clientId == GamePrompt.FragmentOnePlayerId &&
-				(promptOneFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentThree ||
-					promptTwoFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentThree)) {
+	for (FGamePrompt& GamePrompt : AllGamePrompts) {
+		if (promptOneFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentThree ||
+			promptTwoFragmentOne == GamePrompt.SentenceFragments.SentenceFragmentThree) {
+			if (GamePrompt.SentenceFragments.SentenceFragmentThreeResponce.IsEmpty()) {
 				UE_LOG(LogTemp, Warning, TEXT("userInputPromptOne Submitted"));
 				GamePrompt.SentenceFragments.SentenceFragmentThreeResponce = userInputPromptOne;
 				break;
@@ -253,11 +266,9 @@ void ATalkBoxActTwoPawn::PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject
 void ATalkBoxActTwoPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId)
 {
 	FString userInputPromptTwo;
-	if (JsonObject->TryGetStringField(TEXT("userInputPromptTwo"), userInputPromptTwo))
+	if (!JsonObject->TryGetStringField(TEXT("userInputPromptTwo"), userInputPromptTwo))
 	{
-		if (userInputPromptTwo.IsEmpty()) {
-			return;
-		}
+		return;
 	}
 
 	FString promptOneFragmentTwo;
@@ -267,12 +278,13 @@ void ATalkBoxActTwoPawn::PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject
 	JsonObject->TryGetStringField(TEXT("promptTwoFragmentTwo"), promptTwoFragmentTwo);
 
 	for (FGamePrompt& GamePrompt : AllGamePrompts) {
-		if (clientId == GamePrompt.FragmentTwoPlayerId &&
-			(promptOneFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentFour ||
-				promptTwoFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentFour)) {
-			UE_LOG(LogTemp, Warning, TEXT("userInputPromptTwo Submitted"));
-			GamePrompt.SentenceFragments.SentenceFragmentFourResponce = userInputPromptTwo;
-			break;
+		if (promptOneFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentFour ||
+			promptTwoFragmentTwo == GamePrompt.SentenceFragments.SentenceFragmentFour) {
+			if (GamePrompt.SentenceFragments.SentenceFragmentFourResponce.IsEmpty()) {
+				UE_LOG(LogTemp, Warning, TEXT("userInputPromptTwo Submitted"));
+				GamePrompt.SentenceFragments.SentenceFragmentFourResponce = userInputPromptTwo;
+				break;
+			}
 		}
 	}
 
@@ -286,22 +298,22 @@ void ATalkBoxActTwoPawn::PromptReadyUp(FString clientId)
 	// ReadyPlayerCount should be twice the number of players due to double submissions
 	if (ReadyPlayerCount == GameInstance->AllPlayerInfo.Num() * 2)
 	{
-		// All players are ready
-		if (!ShowResponcesUserWidget) {
-			UE_LOG(LogTemp, Error, TEXT("Failed to create the widget instance."));
-			return;
+		if (ReadyUpPostEnterPrompts) {
+			if (!ShowResponcesUserWidget) {
+				UE_LOG(LogTemp, Error, TEXT("Failed to create the widget instance."));
+				return;
+			}
+
+			UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ShowResponcesUserWidget);
+			TimerWidgetInstance->RemoveFromParent();
+			CreatedWidgetInstance->AddToViewport();
+			ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
+			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts);
+			SendPlayerPole();
 		}
-
-		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		JsonObject->SetStringField("Stage", "Pole");
-		GameInstance->SendJsonObject(JsonObject);
-
-		UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ShowResponcesUserWidget);
-		TimerWidgetInstance->RemoveFromParent();
-		CreatedWidgetInstance->AddToViewport();
-		ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-		ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts, 2);
-		SendPlayerPole();
+		else {
+			EndRound();
+		}
 	}
 }
 

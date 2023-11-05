@@ -20,7 +20,6 @@ void ATutorialPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-
 	GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
 	if (!GameInstance) {
 		UE_LOG(LogTemp, Error, TEXT("Failed to get GameInstance"));
@@ -32,6 +31,10 @@ void ATutorialPawn::BeginPlay()
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	JsonObject->SetStringField("Stage", "Tutorial");
 	GameInstance->SendJsonObject(JsonObject);
+
+	if (bSkipTutorial) {
+		StartGame();
+	}
 }
 
 // Called every frame

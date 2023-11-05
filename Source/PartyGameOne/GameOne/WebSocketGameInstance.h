@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include <IWebSocket.h>
 #include "TalkBoxPawn.h"
+#include <HAL/IConsoleManager.h>
 #include "WebSocketGameInstance.generated.h"
 
 USTRUCT(BlueprintType)
@@ -31,6 +32,7 @@ public:
 	virtual void Init() override;
 	virtual void Shutdown() override;
 
+	void OnCallSkipCommand(const TArray<FString>& Args, UWorld* World);
 	FString GetJsonChildrenString(TSharedPtr<FJsonObject> JsonObject, FString ParentVariableString, FString ChildVariableString);
 	void SendJsonObject(TSharedPtr<FJsonObject>& JsonObject);
 	TSharedPtr<IWebSocket> WebSocket;
@@ -39,4 +41,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FString, FPlayerInfo> AllPlayerInfo;
 	TArray<FGamePrompt> AllGamePrompts;
+	struct IConsoleCommand* Command;
 };
