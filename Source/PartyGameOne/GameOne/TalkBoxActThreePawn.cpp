@@ -63,6 +63,13 @@ void ATalkBoxActThreePawn::Tick(float DeltaTime)
 
 }
 
+void ATalkBoxActThreePawn::UpdateScoreOnDevice(FString clientId) {
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	JsonObject->SetNumberField("Score", GameInstance->AllPlayerInfo[clientId].Score);
+	JsonObject->SetStringField("clientId", clientId);
+	GameInstance->SendJsonObject(JsonObject);
+}
+
 void ATalkBoxActThreePawn::OnWebSocketRecieveMessage(const FString& MessageString) {
 	// Create JSON object to be sent out
 	TSharedPtr<FJsonObject> JsonObject;
@@ -95,8 +102,12 @@ void ATalkBoxActThreePawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> Json
 	uint64 option;
 	if (JsonObject->TryGetNumberField(TEXT("option"), option))
 	{
+		AllGamePrompts[option].SentenceFragments.FragFiveSixGroupPoints += 150;
 		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentFivePlayerId].Score += 300 * GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentFivePlayerId].ScoreMultiplier;
 		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentSixPlayerId].Score += 300 * GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentSixPlayerId].ScoreMultiplier;
+		UpdateScoreOnDevice(AllGamePrompts[option].FragmentFivePlayerId);
+		UpdateScoreOnDevice(AllGamePrompts[option].FragmentSixPlayerId);
+		
 		TotalOptionsInputed++;
 
 		if (TotalOptionsInputed == GameInstance->AllPlayerInfo.Num()) {
@@ -104,6 +115,7 @@ void ATalkBoxActThreePawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> Json
 				UE_LOG(LogTemp, Error, TEXT("Invalid ScoreboardLevel"));
 				return;
 			}
+			GameInstance->AllGamePrompts = AllGamePrompts;
 			UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ScoreboardLevel);
 			return;
 		}
@@ -118,10 +130,12 @@ void ATalkBoxActThreePawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonOb
 		if (poleSelection == "Option1") {
 			CurrentPoleVoteTotals.Option1Votes++;
 			GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentFivePlayerId].Score += 200 * GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentFivePlayerId].ScoreMultiplier;
+			UpdateScoreOnDevice(AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentFivePlayerId);
 		}
 		else if (poleSelection == "Option2") {
 			CurrentPoleVoteTotals.Option2Votes++;
 			GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentSixPlayerId].Score += 200 * GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentSixPlayerId].ScoreMultiplier;
+			UpdateScoreOnDevice(AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentSixPlayerId);
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("Invalid Option"))
@@ -243,6 +257,7 @@ void ATalkBoxActThreePawn::SendPlayersSentenceFragments() {
 		JsonObject->SetStringField("promptTwoFragmentTwo2", AllGamePrompts[(i + 1) % NumPlayers].SentenceFragments.SentenceFragmentSix[1]);
 		JsonObject->SetStringField("promptTwoFragmentTwoPlayerId", AllGamePrompts[(i + 1) % NumPlayers].FragmentSixPlayerId);
 
+		JsonObject->SetStringField("partner", GameInstance->AllPlayerInfo[AllGamePrompts[i].FragmentFivePlayerId].PlayerName);
 		JsonObject->SetStringField("clientId", AllGamePrompts[i].FragmentSixPlayerId);
 		GameInstance->SendJsonObject(JsonObject);
 	}
@@ -321,7 +336,7 @@ void ATalkBoxActThreePawn::PromptReadyUp(FString clientId)
 			TimerWidgetInstance->RemoveFromParent();
 			CreatedWidgetInstance->AddToViewport();
 			ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts);
+			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts, 3);
 			SendPlayerPole();
 		}
 		else {
@@ -346,6 +361,7 @@ void ATalkBoxActThreePawn::SendPlayerPole()
 
 template<typename Type>
 void ATalkBoxActThreePawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
+	// This is the correct shuffle method but resulted in people getting the same teammate
 	const int32 LastIndex = Array.Num() - 1;
 
 	for (int32 i = 0; i <= LastIndex; i += 1) {

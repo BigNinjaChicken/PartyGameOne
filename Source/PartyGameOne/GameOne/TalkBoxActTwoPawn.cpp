@@ -57,6 +57,13 @@ void ATalkBoxActTwoPawn::BeginPlay()
 	}
 }
 
+void ATalkBoxActTwoPawn::UpdateScoreOnDevice(FString clientId) {
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	JsonObject->SetNumberField("Score", GameInstance->AllPlayerInfo[clientId].Score);
+	JsonObject->SetStringField("clientId", clientId);
+	GameInstance->SendJsonObject(JsonObject);
+}
+
 // Called every frame
 void ATalkBoxActTwoPawn::Tick(float DeltaTime)
 {
@@ -95,8 +102,12 @@ void ATalkBoxActTwoPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonOb
 	uint64 option;
 	if (JsonObject->TryGetNumberField(TEXT("option"), option))
 	{
+		AllGamePrompts[option].SentenceFragments.FragThreeFourGroupPoints += 100;
 		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentThreePlayerId].Score += 300 * GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentThreePlayerId].ScoreMultiplier;
+		UpdateScoreOnDevice(AllGamePrompts[option].FragmentThreePlayerId);
 		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentFourPlayerId].Score += 300 * GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentFourPlayerId].ScoreMultiplier;
+		UpdateScoreOnDevice(AllGamePrompts[option].FragmentFourPlayerId);
+
 		TotalOptionsInputed++;
 
 		if (TotalOptionsInputed == GameInstance->AllPlayerInfo.Num()) {
@@ -104,6 +115,7 @@ void ATalkBoxActTwoPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonOb
 				UE_LOG(LogTemp, Error, TEXT("Invalid ScoreboardLevel"));
 				return;
 			}
+			GameInstance->AllGamePrompts = AllGamePrompts;
 			UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), ScoreboardLevel);
 			return;
 		}
@@ -118,10 +130,12 @@ void ATalkBoxActTwoPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObje
 		if (poleSelection == "Option1") {
 			CurrentPoleVoteTotals.Option1Votes++;
 			GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentThreePlayerId].Score += 200 * GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentThreePlayerId].ScoreMultiplier;
+			UpdateScoreOnDevice(AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentThreePlayerId);
 		}
 		else if (poleSelection == "Option2") {
 			CurrentPoleVoteTotals.Option2Votes++;
 			GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentFourPlayerId].Score += 200 * GameInstance->AllPlayerInfo[AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentFourPlayerId].ScoreMultiplier;
+			UpdateScoreOnDevice(AllGamePrompts[ShowResponcesWidgetInstance->index].FragmentFourPlayerId);
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("Invalid Option"))
@@ -230,6 +244,7 @@ void ATalkBoxActTwoPawn::SendPlayersSentenceFragments() {
 		JsonObject->SetStringField("promptTwoFragmentTwo", AllGamePrompts[(i + 1) % NumPlayers].SentenceFragments.SentenceFragmentFour);
 		JsonObject->SetStringField("promptTwoFragmentTwoPlayerId", AllGamePrompts[(i + 1) % NumPlayers].FragmentFourPlayerId);
 
+		JsonObject->SetStringField("partner", GameInstance->AllPlayerInfo[AllGamePrompts[i].FragmentThreePlayerId].PlayerName);
 		JsonObject->SetStringField("clientId", AllGamePrompts[i].FragmentFourPlayerId);
 		GameInstance->SendJsonObject(JsonObject);
 	}
@@ -308,7 +323,7 @@ void ATalkBoxActTwoPawn::PromptReadyUp(FString clientId)
 			TimerWidgetInstance->RemoveFromParent();
 			CreatedWidgetInstance->AddToViewport();
 			ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts);
+			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts, 2);
 			SendPlayerPole();
 		}
 		else {
@@ -333,14 +348,10 @@ void ATalkBoxActTwoPawn::SendPlayerPole()
 
 template<typename Type>
 void ATalkBoxActTwoPawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
-	const int32 LastIndex = Array.Num() - 1;
+	const int32 NumElements = Array.Num();
 
-	for (int32 i = 0; i <= LastIndex; i += 1) {
-		const int32 Index = Stream.RandRange(i, LastIndex);
-		if (i == Index) {
-			continue;
-		}
-
-		Array.Swap(i, Index);
+	for (int32 i = 0; i < NumElements; ++i) {
+		int32 NewIndex = (i + 1) % NumElements;
+		Array.Swap(i, NewIndex);
 	}
 }

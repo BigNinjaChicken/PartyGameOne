@@ -24,6 +24,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void UpdateScoreOnDevice(FString clientId);
 	void OnWebSocketRecieveMessage(const FString& MessageString);
 	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
 	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);

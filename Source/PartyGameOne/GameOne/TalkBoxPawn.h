@@ -24,6 +24,9 @@ struct FEncapsule
 	FString SentenceFragmentTwoResponce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 FragOneTwoGroupPoints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString SentenceFragmentThree;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -36,6 +39,9 @@ struct FEncapsule
 	FString SentenceFragmentFourResponce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 FragThreeFourGroupPoints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FString> SentenceFragmentFive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -46,6 +52,9 @@ struct FEncapsule
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString SentenceFragmentSixResponce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 FragFiveSixGroupPoints;
 };
 
 
@@ -142,6 +151,7 @@ public:
 	void OnWebSocketRecieveMessage(const FString& MessageString);
 
 	void UpdateScoreOnDevice(FString clientId);
+
 	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
 
 	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
@@ -151,6 +161,11 @@ public:
 	void PromptReadyUp(FString clientId);
 
 	void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId);
+
+	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
+
+	// UFUNCTION(BlueprintCallable)
+	void SendPlayerPole();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptTime = 50.0f;
@@ -169,12 +184,8 @@ public:
 
 	int ReadyPlayerCount = 0;
 
-	// UFUNCTION(BlueprintCallable)
-	void SendPlayerPole();
-
 	int32 RoundEndReadyUpCount = 0;
 
-	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
 	FPoleVoteTotals CurrentPoleVoteTotals;
 	
 	int32 TotalOptionsInputed = 0;

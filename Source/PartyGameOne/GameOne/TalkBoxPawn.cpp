@@ -30,21 +30,21 @@ void ATalkBoxPawn::BeginPlay()
 	GameInstance->AllPlayerInfo.GetKeys(AllPlayerIds);
 
 	// CreateSentencePossibility("", "", "", "");
-	CreateSentencePossibility("Old man Roger caught us trespassing and he", "but then I", "Once he caught my friend,", "But you should’ve seen his face when");
+	CreateSentencePossibility("Old man Roger caught us trespassing and he", "but then I", "Once he caught my friend,", "But you should\'ve seen his face when");
 	CreateSentencePossibility("The stoner absolutely lost it when", "Once his weed was back though,", "Since one of the officers made it to him,", "Once he was in custody, he");
 	CreateSentencePossibility("My fellow Americans,", "Despite this news,", "The White House has just received news that", "And because of this revelation,");
-	CreateSentencePossibility("The woke left doesn’t want you to know this, but", "And because of that, society", "But the rest of us in the real world know", "Especially once we take over the");
+	CreateSentencePossibility("The woke left doesn\'t want you to know this, but", "And because of that, society", "But the rest of us in the real world know", "Especially once we take over the");
 	CreateSentencePossibility("The dragon swoops down, killing", "But as the knights come to defend", "The dragon was scared away by", "After that, he never came back to");
-	CreateSentencePossibility("Reagan shouted out to the nation", "But Gorbachev said that", "He really didn’t care when", "And since then, Reagan has");
-	CreateSentencePossibility("Ya reckon that New Brunswickshire will", "I couldn’t count on Nem to do", "What in the hell was", "Especially because he didn’t");
-	CreateSentencePossibility("Thor ripped off his shirt when he saw", "then Odin said, “Son,”", "Tony Stark rose from the dead to say", "In revolt, Captain America retorted, stating that");
-	CreateSentencePossibility("Tommy, you can’t just", "But Arthur, you haven’t considered", "Mr. Kimber told me that", "Yeah, but I bet he didn’t think of");
+	CreateSentencePossibility("Reagan shouted out to the nation", "But Gorbachev said that", "He really didn\'t care when", "And since then, Reagan has");
+	CreateSentencePossibility("Ya reckon that New Brunswickshire will", "I couldn\'t count on Nem to do", "What in the hell was", "Especially because he didn\'t");
+	CreateSentencePossibility("Thor ripped off his shirt when he saw", "then Odin said, \"Son,\"", "Tony Stark rose from the dead to say", "In revolt, Captain America retorted, stating that");
+	CreateSentencePossibility("Tommy, you can\'t just", "But Arthur, you haven\'t considered", "Mr. Kimber told me that", "Yeah, but I bet he didn\'t think of");
 	CreateSentencePossibility("Master Jedi, have you the gall to", "With your unique control of the force,", "But since you all have such an ego,", "I would kill you where you stand, but");
-	CreateSentencePossibility("Hey! You can’t do that! That’s my", "Tough shit, nerd. You can", "Once we get to lunch, I’m gonna", "Thankfully, the carrot didn’t");
-	CreateSentencePossibility("Yes Ma’am, we sell quite a few", "In fact, our pricing is some of the best! We have", "Once you buy our plan, you get", "But only if you are willing to");
-	CreateSentencePossibility("Have you heard Green Day’s new album? They said", "And by the way, they really didn’t", "But if you make sure to listen to", "Then you’ll be entirely set up to check out the");
-	CreateSentencePossibility("How many miles are we gonna walk? I don’t want to", "Alongside the bears, too. Can’t we just", "Oh my god! I didn’t think we’d see", "We have to run. It’s going to");
-	CreateSentencePossibility("First thing’s first, you want to make sure that", "But in order to make sure that your material goes through,", "Once we have the raw iron, we feed it into", "And then shit gets CRAZY. We turn it into");
+	CreateSentencePossibility("Hey! You can\'t do that! That\'s my", "Tough shit, nerd. You can", "Once we get to lunch, I\'m gonna", "Thankfully, the carrot didn\'t");
+	CreateSentencePossibility("Yes Ma\'am, we sell quite a few", "In fact, our pricing is some of the best! We have", "Once you buy our plan, you get", "But only if you are willing to");
+	CreateSentencePossibility("Have you heard Green Day\'s new album? They said", "And by the way, they really didn\'t", "But if you make sure to listen to", "Then you\'ll be entirely set up to check out the");
+	CreateSentencePossibility("How many miles are we gonna walk? I don\'t want to", "Alongside the bears, too. Can\'t we just", "Oh my god! I didn\'t think we\'d see", "We have to run. It\'s going to");
+	CreateSentencePossibility("First thing\'s first, you want to make sure that", "But in order to make sure that your material goes through,", "Once we have the raw iron, we feed it into", "And then shit gets CRAZY. We turn it into");
 
 	GameInstance->WebSocket->OnMessage().AddUObject(this, &ATalkBoxPawn::OnWebSocketRecieveMessage);
 
@@ -77,10 +77,10 @@ void ATalkBoxPawn::BeginPlay()
 void ATalkBoxPawn::CreateSentencePossibility(FString FragmentOne, FString FragmentTwo, FString FragmentThree, FString FragmentFour)
 {
 	FEncapsule Item;
-	Item.SentenceFragmentOne = FragmentOne;
-	Item.SentenceFragmentTwo = FragmentTwo;
-	Item.SentenceFragmentThree = FragmentThree;
-	Item.SentenceFragmentFour = FragmentFour;
+	Item.SentenceFragmentOne = FragmentOne.ToUpper();
+	Item.SentenceFragmentTwo = FragmentTwo.ToUpper();
+	Item.SentenceFragmentThree = FragmentThree.ToUpper();
+	Item.SentenceFragmentFour = FragmentFour.ToUpper();
 	SentencePossibilities.Add(Item);
 }
 
@@ -198,9 +198,10 @@ void ATalkBoxPawn::ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject)
 	uint64 option;
 	if (JsonObject->TryGetNumberField(TEXT("option"), option))
 	{
+		AllGamePrompts[option].SentenceFragments.FragOneTwoGroupPoints += 100;
 		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentOnePlayerId].Score += 300;
-		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentTwoPlayerId].Score += 300;
 		UpdateScoreOnDevice(AllGamePrompts[option].FragmentOnePlayerId);
+		GameInstance->AllPlayerInfo[AllGamePrompts[option].FragmentTwoPlayerId].Score += 300;
 		UpdateScoreOnDevice(AllGamePrompts[option].FragmentTwoPlayerId);
 			
 		TotalOptionsInputed++;
@@ -386,14 +387,10 @@ void ATalkBoxPawn::SendPlayerPole()
 
 template<typename Type>
 void ATalkBoxPawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
-	const int32 LastIndex = Array.Num() - 1;
+	const int32 NumElements = Array.Num();
 
-	for (int32 i = 0; i <= LastIndex; i += 1) {
-		const int32 Index = Stream.RandRange(i, LastIndex);
-		if (i == Index) {
-			continue;
-		}
-
-		Array.Swap(i, Index);
+	for (int32 i = 0; i < NumElements; ++i) {
+		int32 NewIndex = (i + 1) % NumElements;
+		Array.Swap(i, NewIndex);
 	}
 }
