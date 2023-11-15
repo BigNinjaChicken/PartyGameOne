@@ -1,20 +1,21 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (C) [Year] [Your Name]
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "TalkBoxPawn.h"
-#include "TalkBoxActTwoPawn.generated.h"
+
+#include "TalkBoxActOnePawn.generated.h"
 
 UCLASS()
-class PARTYGAMEONE_API ATalkBoxActTwoPawn : public ATalkBoxPawn
+class PARTYGAMEONE_API ATalkBoxActOnePawn : public ATalkBoxPawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	ATalkBoxActTwoPawn();
+	ATalkBoxActOnePawn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,7 +23,7 @@ protected:
 
 	void CreateSentencePossibility(FString FragmentOne, FString FragmentTwo, FString FragmentThree, FString FragmentFour);
 
-public:
+public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -32,9 +33,9 @@ public:
 
 	virtual void EndRound();
 
-	virtual void OnWinnerDisplayed();
-
 	virtual void OnWebSocketRecieveMessage(const FString& MessageString);
+
+	virtual void OnWinnerDisplayed();
 
 	virtual void UpdateScoreOnDevice(FString playerName);
 

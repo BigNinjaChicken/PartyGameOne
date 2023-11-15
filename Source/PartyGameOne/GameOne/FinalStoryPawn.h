@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "TalkBoxPawn.h"
+#include "TalkBoxActOnePawn.h"
 
 #include "FinalStoryPawn.generated.h"
 
@@ -38,17 +38,4 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DisplayBestGamePrompt();
-
-	//************************************
-	// Method:    GetPlayerName
-	// FullName:  AFinalStoryPawn::GetPlayerName
-	// Access:    public 
-	// Returns:   void
-	// Qualifier:
-	// Parameter: String clientId
-	// 
-	// Given a client ID this method will return the player name associated with that id
-	//************************************
-	UFUNCTION(BlueprintCallable)
-	FString GetPlayerName(FString clientId);
 };

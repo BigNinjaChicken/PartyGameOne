@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include <IWebSocket.h>
-#include "TalkBoxPawn.h"
+#include "TalkBoxActOnePawn.h"
 #include <HAL/IConsoleManager.h>
 #include "WebSocketGameInstance.generated.h"
 
@@ -13,9 +13,6 @@ USTRUCT(BlueprintType)
 struct FPlayerInfo
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FString PlayerName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int Score = 0;

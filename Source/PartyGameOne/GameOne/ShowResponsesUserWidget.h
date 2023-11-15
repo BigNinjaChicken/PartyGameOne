@@ -2,11 +2,14 @@
 
 #pragma once
 
-#include "TalkBoxPawn.h"
+#include "TalkBoxActOnePawn.h"
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "ShowResponsesUserWidget.generated.h"
+
+// Define a multicast delegate type (no parameters in this case)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWinnerDisplayedDelegate);
 
 /**
  *
@@ -20,6 +23,12 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
     void ShowPrompts(const TArray<FGamePrompt>& AllGamePrompts, int32 ActNumber = 1);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
+	void DisplayWinner(const FString& winner, bool bOption1Wins);
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Events")
+    FOnWinnerDisplayedDelegate OnWinnerDisplayed;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = State)
     int index = 0;

@@ -8,7 +8,7 @@
 #include "TalkBoxActThreePawn.generated.h"
 
 UCLASS()
-class PARTYGAMEONE_API ATalkBoxActThreePawn : public APawn
+class PARTYGAMEONE_API ATalkBoxActThreePawn : public ATalkBoxPawn
 {
 	GENERATED_BODY()
 
@@ -20,61 +20,31 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void UpdateScoreOnDevice(FString clientId);
-	void OnWebSocketRecieveMessage(const FString& MessageString);
-	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
-	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
-	void EndRound();
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void SendPlayersSentenceFragments();
+	virtual void SendPlayersSentenceFragments();
 
-	void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId);
-	void PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId);
-	void PromptReadyUp(FString clientId);
+	virtual void EndRound();
 
-	void SendPlayerPole();
-	int ReadyPlayerCount = 0;
-	TArray<FString> AllPlayerIds;
+	virtual void OnWebSocketRecieveMessage(const FString& MessageString);
 
-	UPROPERTY(EditAnywhere, Category = UI)
-    TSubclassOf<class UShowResponsesUserWidget> ShowResponcesUserWidget;
-	UShowResponsesUserWidget* ShowResponcesWidgetInstance;
+	virtual void OnWinnerDisplayed();
 
-	UPROPERTY(EditAnywhere, Category = UI)
-    TSubclassOf<class UShowAllGoupResponsesUserWidget> ShowAllGoupResponsesUserWidget;
-	UShowAllGoupResponsesUserWidget* ShowAllGoupResponsesWidgetInstance;
+	virtual void UpdateScoreOnDevice(FString playerName);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
-	float InputPromptTime = 50.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
-	float InputPromptSafetyTime = 2.0f;
+	virtual void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
 
+	virtual void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
 
-	int32 ReadyUpPostEnterPrompts = 0;
+	virtual void PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString playerName);
 
-	class UWebSocketGameInstance* GameInstance;
+	virtual void PromptReadyUp(FString playerName);
 
-	TArray<FGamePrompt> AllGamePrompts;
+	virtual void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString playerName);
 
-	UPROPERTY(EditAnywhere, Category = UI)
-    TSubclassOf<class UTimerUserWidget> TimerUserWidget;
-	UTimerUserWidget* TimerWidgetInstance;
-
-	FPoleVoteTotals CurrentPoleVoteTotals;
-
-	int32 TotalOptionsInputed = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
-    TSoftObjectPtr<UWorld> ScoreboardLevel;
-
-	UPROPERTY()
-	FTimerHandle GameTimerHandle;
-
-	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
+	virtual void SendPlayerPole();
 };

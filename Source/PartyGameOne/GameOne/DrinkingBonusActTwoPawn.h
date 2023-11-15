@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "DrinkingBonusPawn.h"
 #include "DrinkingBonusActTwoPawn.generated.h"
 
 UCLASS()
-class PARTYGAMEONE_API ADrinkingBonusActTwoPawn : public APawn
+class PARTYGAMEONE_API ADrinkingBonusActTwoPawn : public ADrinkingBonusPawn
 {
 	GENERATED_BODY()
 
@@ -25,16 +26,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	void OnWebSocketRecieveMessage(const FString& MessageString);
-
-	void ApplySelectedMultiplier(TSharedPtr<FJsonObject> JsonObject);
-
-	class UWebSocketGameInstance* GameInstance;
-
-	int32 NumPlayersGettingSelecction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
-    TSoftObjectPtr<UWorld> TalkBoxActThreeLevel;
 
 };

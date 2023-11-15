@@ -1,4 +1,4 @@
-// Copyright (C) [Year] [Your Name]
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -120,7 +120,38 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void CreateSentencePossibility(FString FragmentOne, FString FragmentTwo, FString FragmentThree, FString FragmentFour);
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
+	void SendPlayersSentenceFragments();
+
+	void EndRound();
+
+	void OnWebSocketRecieveMessage(const FString& MessageString);
+
+	UFUNCTION()
+	void OnWinnerDisplayed();
+
+	void UpdateScoreOnDevice(FString playerName);
+
+	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
+
+	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
+
+	void PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString playerName);
+
+	void PromptReadyUp(FString playerName);
+
+	void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString playerName);
+
+	void SendPlayerPole();
+
+public:
 	UPROPERTY(EditAnywhere, Category = UI)
     TSubclassOf<class UTimerUserWidget> TimerUserWidget;
 
@@ -136,36 +167,6 @@ protected:
 
 	class UWebSocketGameInstance* GameInstance;
 	TArray<FString> AllPlayerIds;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	void SendPlayersSentenceFragments();
-
-	void EndRound();
-
-	void OnWebSocketRecieveMessage(const FString& MessageString);
-
-	void UpdateScoreOnDevice(FString clientId);
-
-	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
-
-	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
-
-	void PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString clientId);
-
-	void PromptReadyUp(FString clientId);
-
-	void PromptResponceUserInputPromptOne(TSharedPtr<FJsonObject> JsonObject, FString clientId);
-
-	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
-
-	// UFUNCTION(BlueprintCallable)
-	void SendPlayerPole();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptTime = 50.0f;

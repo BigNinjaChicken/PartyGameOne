@@ -50,7 +50,7 @@ void AScoreboardActOnePawn::OpenNextLevel()
 		UE_LOG(LogTemp, Warning, TEXT("Finish Timer"));
 
 		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		JsonObject->SetStringField("Stage", "DrinkBonus");
+		JsonObject->SetNumberField("Stage", 7);
 		GameInstance->SendJsonObject(JsonObject);
 
 		if (DrinkingBonusLevel.IsNull()) {

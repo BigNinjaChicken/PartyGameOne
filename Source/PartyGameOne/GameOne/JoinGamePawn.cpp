@@ -123,9 +123,8 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
             PlayerReadyMap.Add(PlayerName, false); // Not Ready Yet
 
             FPlayerInfo NewPlayerInfo;
-            NewPlayerInfo.PlayerName = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "playerName");
-            FString PlayerId = GameInstance->GetJsonChildrenString(JsonObject, "clientInfo", "clientId");
-            GameInstance->AllPlayerInfo.Add(PlayerId, NewPlayerInfo);
+            NewPlayerInfo.Score = 0;
+            GameInstance->AllPlayerInfo.Add(PlayerName, NewPlayerInfo);
         }
     }
 }

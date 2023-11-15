@@ -4,8 +4,12 @@
 #include "WebSocketGameInstance.h"
 #include "WebSocketsModule.h"
 #include "JsonUtilities.h"
+#include "Kismet/GameplayStatics.h"
 #include "HAL/IConsoleManager.h"
+ 
 #include "GameFramework/GameUserSettings.h" 
+#include <Dom/JsonObject.h>
+#include <Serialization/JsonReader.h>
 
 
 void UWebSocketGameInstance::Init()
@@ -42,7 +46,7 @@ void UWebSocketGameInstance::Init()
 			UE_LOG(LogTemp, Warning, TEXT("Connection Closed: %s"), *Reason);
 		});
 
-	WebSocket->OnMessage().AddLambda([](const FString& MessageString)
+	WebSocket->OnMessage().AddLambda([this](const FString& MessageString)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Received Message: %s"), *MessageString);
 		});
@@ -54,7 +58,7 @@ void UWebSocketGameInstance::Init()
 
 	WebSocket->Connect();
 
-	// Tell Server that Unreal is Connected
+	// Tell Server that Unreal is Connected.
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	JsonObject->SetStringField(TEXT("clientType"), TEXT("Unreal"));
 	SendJsonObject(JsonObject);
@@ -102,4 +106,3 @@ void UWebSocketGameInstance::SendJsonObject(TSharedPtr<FJsonObject>& JsonObject)
 	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
 	WebSocket->Send(OutputString);
 }
-

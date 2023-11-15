@@ -33,4 +33,14 @@ public:
 	class UWebSocketGameInstance* GameInstance;
 
 	int32 PlayerAmountRecivedMult = 0;
+
+	UPROPERTY(EditAnywhere, Category = UI)
+    TSubclassOf<class UTakeShotUserWidget> TakeShotUserWidget;
+
+	UTakeShotUserWidget* TakeShotUserWidgetInstance;
+
+	TMap<FString, bool> ReadyMap;
+
+	UPROPERTY(EditAnywhere, Category = State)
+	int ClientStage = 9;
 };

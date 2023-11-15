@@ -64,9 +64,3 @@ void AFinalStoryPawn::OnWebSocketRecieveMessage(const FString& MessageString)
 {
 
 }
-
-FString AFinalStoryPawn::GetPlayerName(FString clientId)
-{
-	return GameInstance->AllPlayerInfo[clientId].PlayerName;
-}
-

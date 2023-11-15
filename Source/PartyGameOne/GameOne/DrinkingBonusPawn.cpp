@@ -7,6 +7,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <Misc/CString.h>
 #include <Kismet/KismetStringLibrary.h>
+#include <Misc/DefaultValueHelper.h>
 
 // Sets default values
 ADrinkingBonusPawn::ADrinkingBonusPawn()
@@ -32,7 +33,7 @@ void ADrinkingBonusPawn::BeginPlay()
     // Create a struct to store player info
     struct FPlayerInfo
     {
-        FString PlayerID;
+        FString PlayerName;
         int32 Score;
     };
 
@@ -42,7 +43,7 @@ void ADrinkingBonusPawn::BeginPlay()
     for (const auto& PlayerInfo : GameInstance->AllPlayerInfo)
     {
         FPlayerInfo Info;
-        Info.PlayerID = PlayerInfo.Key;
+        Info.PlayerName = PlayerInfo.Key;
         Info.Score = PlayerInfo.Value.Score;
         PlayerInfos.Add(Info);
     }
@@ -59,27 +60,31 @@ void ADrinkingBonusPawn::BeginPlay()
     // Add a warning log to check the number of players to keep
     UE_LOG(LogTemp, Warning, TEXT("Number of players to keep: %d"), NumPlayersGettingSelecction);
 
+    // Reset Multipliers
+    for (auto& PlayerInfo : GameInstance->AllPlayerInfo) {
+        PlayerInfo.Value.ScoreMultiplier = 1.0f;
+    }
+
     // Bottom 30% player IDs
     for (int32 i = 0; i < NumPlayersGettingSelecction; i++)
     {
-        FString playerID = PlayerInfos[i].PlayerID;
+        FString PlayerName = PlayerInfos[i].PlayerName;
 
         TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-        JsonObject->SetStringField("clientId", playerID);
+        JsonObject->SetStringField("playerName", PlayerName);
 
         int j = 0;
         for (const auto& PlayerInfo : GameInstance->AllPlayerInfo) {
             float RawRandomOffset = FMath::RandRange(-0.2f, 0.2f);  // Generate a random float value in the range -0.2 to 0.2
             float RoundedRandomOffset = FMath::RoundToFloat(RawRandomOffset * 10.0f) / 10.0f;  // Round to the nearest first decimal point
 
-            if (PlayerInfo.Key == playerID) {
+            if (PlayerInfo.Key == PlayerName) {
                 JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(2.0f + RoundedRandomOffset));
             }
             else {
                 JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(3.0f + RoundedRandomOffset));
             }
-            JsonObject->SetStringField("PlayerName" + FString::FromInt(j), PlayerInfo.Value.PlayerName);
-            JsonObject->SetStringField("PlayerID" + FString::FromInt(j), PlayerInfo.Key);
+            JsonObject->SetStringField("PlayerName" + FString::FromInt(j), PlayerInfo.Key);
 
             j++;
         }
@@ -106,9 +111,9 @@ void ADrinkingBonusPawn::OnWebSocketRecieveMessage(const FString& MessageString)
 
 void ADrinkingBonusPawn::ApplySelectedMultiplier(TSharedPtr<FJsonObject> JsonObject)
 {
-	FString selectedPlayerId;
-	if (!JsonObject->TryGetStringField(TEXT("selectedPlayerId"), selectedPlayerId)) {
-		UE_LOG(LogTemp, Warning, TEXT("selectedPlayerId null"))
+	FString selectedPlayerName;
+	if (!JsonObject->TryGetStringField(TEXT("selectedPlayerName"), selectedPlayerName)) {
+		UE_LOG(LogTemp, Warning, TEXT("selectedPlayerName null"))
 			return;
 	}
 
@@ -118,7 +123,9 @@ void ADrinkingBonusPawn::ApplySelectedMultiplier(TSharedPtr<FJsonObject> JsonObj
 			return;
 	}
 
-	GameInstance->AllPlayerInfo[selectedPlayerId].ScoreMultiplier = UKismetStringLibrary::Conv_StringToFloat(multiplier);
+    float ScoreMultiplierValue;
+    FDefaultValueHelper::ParseFloat(multiplier, ScoreMultiplierValue);
+    GameInstance->AllPlayerInfo[selectedPlayerName].ScoreMultiplier = ScoreMultiplierValue;
 
     NumPlayersGettingSelecction--;
     if (NumPlayersGettingSelecction == 0) {

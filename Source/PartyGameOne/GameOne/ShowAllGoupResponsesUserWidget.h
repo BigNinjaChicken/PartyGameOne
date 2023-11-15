@@ -17,4 +17,10 @@ class PARTYGAMEONE_API UShowAllGoupResponsesUserWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
 	void ShowPrompts(const TArray<FGamePrompt>& AllGamePrompts);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
+	void DisplayWinner(const FString& winnerPlayerId, const TArray<FGamePrompt>& AllGamePrompts);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
+	void OnWinnerDisplayed();
 };
