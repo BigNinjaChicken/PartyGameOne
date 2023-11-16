@@ -51,11 +51,16 @@ void ATalkBoxPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 template<typename Type>
 void ATalkBoxPawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
-	const int32 NumElements = Array.Num();
+	// This is the correct shuffle method but resulted in people getting the same teammate
+	const int32 LastIndex = Array.Num() - 1;
 
-	for (int32 i = 0; i < NumElements; ++i) {
-		int32 NewIndex = (i + 1) % NumElements;
-		Array.Swap(i, NewIndex);
+	for (int32 i = 0; i <= LastIndex; i += 1) {
+		const int32 Index = Stream.RandRange(i, LastIndex);
+		if (i == Index) {
+			continue;
+		}
+
+		Array.Swap(i, Index);
 	}
 }
 

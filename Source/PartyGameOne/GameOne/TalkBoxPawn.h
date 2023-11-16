@@ -127,7 +127,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	template<typename Type> void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
+	// Scrambles an array of any type
+	template<typename Type> 
+	void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
+
 	void SendPlayersSentenceFragments();
 
 	void EndRound();

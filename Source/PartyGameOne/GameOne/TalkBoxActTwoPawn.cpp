@@ -346,13 +346,3 @@ void ATalkBoxActTwoPawn::SendPlayerPole()
 
 	CurrentPoleVoteTotals.Reset();
 }
-
-template<typename Type>
-void ATalkBoxActTwoPawn::ShuffleArray(FRandomStream& Stream, TArray<Type>& Array) {
-	const int32 NumElements = Array.Num();
-
-	for (int32 i = 0; i < NumElements; ++i) {
-		int32 NewIndex = (i + 1) % NumElements;
-		Array.Swap(i, NewIndex);
-	}
-}

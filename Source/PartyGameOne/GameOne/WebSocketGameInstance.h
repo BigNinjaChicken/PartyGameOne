@@ -39,4 +39,6 @@ public:
 	TMap<FString, FPlayerInfo> AllPlayerInfo;
 	TArray<FGamePrompt> AllGamePrompts;
 	struct IConsoleCommand* Command;
+
+	int32 Difficulty;
 };

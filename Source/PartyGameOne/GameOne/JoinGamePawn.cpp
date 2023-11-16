@@ -74,6 +74,20 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         return;
     }
 
+    int32 difficultySelected;
+    if (JsonObject->TryGetNumberField(TEXT("difficultySelected"), difficultySelected)) {
+        // GameInstance->Difficulty = difficultySelected;
+        if (PlayerSelectedDifficultySelected[difficultySelected]) 
+        {
+            PlayerSelectedDifficultySelected[difficultySelected]++;
+        }
+        else 
+        {
+            PlayerSelectedDifficultySelected.Add(difficultySelected, 0);
+        }
+       
+    }
+
     // Ready Up
     bool bIsReady;
     if (JsonObject->TryGetBoolField(TEXT("bIsReady"), bIsReady))
@@ -102,6 +116,21 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
                 return;
             }
         }
+
+        // Everyone is ready!
+        int32 HighestValue = TNumericLimits<int32>::Min();
+        int32 KeyWithHighestValue = 0; // Initialize with a default key
+
+        for (const auto& KeyValue : PlayerSelectedDifficultySelected)
+        {
+            if (KeyValue.Value > HighestValue)
+            {
+                HighestValue = KeyValue.Value;
+                KeyWithHighestValue = KeyValue.Key;
+            }
+        }
+
+        GameInstance->Difficulty = KeyWithHighestValue;
 
         if (TutorialLevel.IsNull()) {
             UE_LOG(LogTemp, Error, TEXT("Invalid TutorialLevel"));
