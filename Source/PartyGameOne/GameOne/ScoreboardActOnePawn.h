@@ -26,6 +26,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void SendStageToPlayer(int StageNumber);
+
 	UFUNCTION(BlueprintCallable)
 	void OpenNextLevel();
 
@@ -35,8 +37,16 @@ public:
 	UPROPERTY(EditAnywhere)
 	float ScoreboardTime = 5.0f;
 
+	UPROPERTY(EditAnywhere)
+	int32 ScoreboardStageNumber = 7;
+
 	class UWebSocketGameInstance* GameInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> DrinkingBonusLevel;
+
+	UPROPERTY(EditAnywhere, Category = UI)
+    TSubclassOf<class UScoreboardUserWidget> ScoreboardUserWidget;
+
+	UScoreboardUserWidget* ScoreboardWidgetInstance;
 };

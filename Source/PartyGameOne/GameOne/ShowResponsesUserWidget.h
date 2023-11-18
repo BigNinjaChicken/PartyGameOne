@@ -27,7 +27,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Progress")
 	void DisplayWinner(const FString& winner, bool bOption1Wins);
 
-	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, EditAnywhere, Category = "Events")
     FOnWinnerDisplayedDelegate OnWinnerDisplayed;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = State)

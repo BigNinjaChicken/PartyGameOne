@@ -24,7 +24,7 @@ struct FEncapsule
 	FString SentenceFragmentTwoResponce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 FragOneTwoGroupPoints;
+	int32 FragOneTwoGroupPoints = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString SentenceFragmentThree;
@@ -39,7 +39,7 @@ struct FEncapsule
 	FString SentenceFragmentFourResponce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 FragThreeFourGroupPoints;
+	int32 FragThreeFourGroupPoints = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FString> SentenceFragmentFive;
@@ -54,7 +54,7 @@ struct FEncapsule
 	FString SentenceFragmentSixResponce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 FragFiveSixGroupPoints;
+	int32 FragFiveSixGroupPoints = 0;
 };
 
 
@@ -127,24 +127,20 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Scrambles an array of any type
-	template<typename Type> 
-	void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
-
 	void SendPlayersSentenceFragments();
 
 	void EndRound();
 
 	void OnWebSocketRecieveMessage(const FString& MessageString);
 
-	UFUNCTION()
-	void OnWinnerDisplayed();
-
 	void UpdateScoreOnDevice(FString playerName);
 
 	void ReceivePlayerAllPoleVote(TSharedPtr<FJsonObject> JsonObject);
 
 	void RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject);
+
+	UFUNCTION()
+	void OnWinnerDisplayed();
 
 	void PromptResponceUserInputPromptTwo(TSharedPtr<FJsonObject> JsonObject, FString playerName);
 
@@ -154,6 +150,10 @@ public:
 
 	void SendPlayerPole();
 
+	void CreateSentencePossibility(FString FragmentOne, FString FragmentTwo, FString FragmentThree, FString FragmentFour);
+
+	template<typename Type>
+	void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array);
 public:
 	UPROPERTY(EditAnywhere, Category = UI)
     TSubclassOf<class UTimerUserWidget> TimerUserWidget;
@@ -173,6 +173,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptTime = 50.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptSafetyTime = 2.0f;
 
@@ -180,6 +181,7 @@ public:
 	int32 ReadyUpPostEnterPrompts = 0;
 
 	TArray<FEncapsule> SentencePossibilities;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Game, meta = (AllowPrivateAccess = "true"))
 	TArray<FGamePrompt> AllGamePrompts;
 
@@ -196,4 +198,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> ScoreboardLevel;
+
+	UPROPERTY(EditAnywhere)
+	int32 ActNumber = 1;
+
+	UPROPERTY(EditAnywhere)
+	int32 PromptStageNumber = 4;
+
+	UPROPERTY(EditAnywhere)
+	int32 PollStageNumber = 5;
+
+	UPROPERTY(EditAnywhere)
+	int32 AllPoleStageNumber = 6;
 };

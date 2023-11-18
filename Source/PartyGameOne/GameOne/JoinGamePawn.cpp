@@ -76,16 +76,15 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
 
     int32 difficultySelected;
     if (JsonObject->TryGetNumberField(TEXT("difficultySelected"), difficultySelected)) {
-        // GameInstance->Difficulty = difficultySelected;
-        if (PlayerSelectedDifficultySelected[difficultySelected]) 
-        {
-            PlayerSelectedDifficultySelected[difficultySelected]++;
+        // Check if the difficultySelected key exists in the map
+        if (PlayerSelectedDifficultyMap.Contains(difficultySelected)) {
+            // If it exists, increment its value
+            PlayerSelectedDifficultyMap[difficultySelected]++;
         }
-        else 
-        {
-            PlayerSelectedDifficultySelected.Add(difficultySelected, 0);
+        else {
+            // If it doesn't exist, add the key with a value of 1
+            PlayerSelectedDifficultyMap.Add(difficultySelected, 1);
         }
-       
     }
 
     // Ready Up
@@ -118,24 +117,26 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         }
 
         // Everyone is ready!
-        int32 HighestValue = TNumericLimits<int32>::Min();
-        int32 KeyWithHighestValue = 0; // Initialize with a default key
+        int32 AmountSelectedDifficulty = TNumericLimits<int32>::Min();
+        int32 VotedDifficulty = 0; 
 
-        for (const auto& KeyValue : PlayerSelectedDifficultySelected)
+        for (const auto& SelectedDifficulty : PlayerSelectedDifficultyMap)
         {
-            if (KeyValue.Value > HighestValue)
+            if (SelectedDifficulty.Value > AmountSelectedDifficulty)
             {
-                HighestValue = KeyValue.Value;
-                KeyWithHighestValue = KeyValue.Key;
+                AmountSelectedDifficulty = SelectedDifficulty.Value;
+                VotedDifficulty = SelectedDifficulty.Key;
             }
         }
 
-        GameInstance->Difficulty = KeyWithHighestValue;
+        GameInstance->DifficultyLevel = VotedDifficulty;
+        UE_LOG(LogTemp, Warning, TEXT("Select difficulty is %d"), VotedDifficulty);
 
         if (TutorialLevel.IsNull()) {
             UE_LOG(LogTemp, Error, TEXT("Invalid TutorialLevel"));
             return;
         }
+
         UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TutorialLevel);
         return;
     }

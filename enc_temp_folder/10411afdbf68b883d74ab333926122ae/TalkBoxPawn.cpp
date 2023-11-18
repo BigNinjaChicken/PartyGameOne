@@ -234,7 +234,6 @@ void ATalkBoxPawn::EndRound() {
 	TimerWidgetInstance->RemoveFromParent();
 	CreatedWidgetInstance->AddToViewport();
 	ShowResponcesWidgetInstance = Cast<UShowResponsesUserWidget>(CreatedWidgetInstance);
-	ShowResponcesWidgetInstance->OnWinnerDisplayed.AddDynamic(this, &ATalkBoxPawn::OnWinnerDisplayed);
 	ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts, ActNumber);
 	SendPlayerPole();
 }
@@ -403,21 +402,22 @@ void ATalkBoxPawn::RecievedPlayerPoleVote(TSharedPtr<FJsonObject> JsonObject)
 			}
 
 			// Display the winner on the ShowResponcesWidgetInstance
+			ShowResponcesWidgetInstance->OnWinnerDisplayed.AddDynamic(this, &ATalkBoxPawn::OnWinnerDisplayed);
 			ShowResponcesWidgetInstance->DisplayWinner(winnerPlayerId, CurrentPoleVoteTotals.Option1Votes > CurrentPoleVoteTotals.Option2Votes);
 		}
 	}
 }
 
 void ATalkBoxPawn::OnWinnerDisplayed() {
-	UE_LOG(LogTemp, Warning, TEXT("OnWinnerDisplayed"));
-	if (ShowResponcesWidgetInstance->index < AllGamePrompts.Num() - 1) {
-		// Move to the next prompt
-		ShowResponcesWidgetInstance->index++;
-		ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts, ActNumber); // Display next prompt
-		SendPlayerPole();
+	UE_LOG(LogTemp, Warning, TEXT("Here"))
+		if (ShowResponcesWidgetInstance->index < AllGamePrompts.Num()) {
+			// Move to the next prompt
+			ShowResponcesWidgetInstance->index++;
+			ShowResponcesWidgetInstance->ShowPrompts(AllGamePrompts, ActNumber); // Display next prompt
+			SendPlayerPole();
 
-		return;
-	}
+			return;
+		}
 
 	if (!ShowAllGoupResponsesUserWidget) {
 		UE_LOG(LogTemp, Error, TEXT("ShowAllGoupResponsesUserWidget null"));
@@ -441,11 +441,11 @@ void ATalkBoxPawn::OnWinnerDisplayed() {
 		FGamePrompt GamePrompts = AllGamePrompts[i];
 
 		FString PromptFragmentOneKey = FString::Printf(TEXT("promptFragmentOne%d"), i);
-		FString PromptFragmentOneResponceKey = FString::Printf(TEXT("promptFragmentOneResponce%d"), i);
-		FString PromptFragmentOnePlayerIdKey = FString::Printf(TEXT("promptFragmentOnePlayerId%d"), i);
-		FString PromptFragmentTwoKey = FString::Printf(TEXT("promptFragmentTwo%d"), i);
-		FString PromptFragmentTwoResponceKey = FString::Printf(TEXT("promptFragmentTwoResponce%d"), i);
-		FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
+			FString PromptFragmentOneResponceKey = FString::Printf(TEXT("promptFragmentOneResponce%d"), i);
+			FString PromptFragmentOnePlayerIdKey = FString::Printf(TEXT("promptFragmentOnePlayerId%d"), i);
+			FString PromptFragmentTwoKey = FString::Printf(TEXT("promptFragmentTwo%d"), i);
+			FString PromptFragmentTwoResponceKey = FString::Printf(TEXT("promptFragmentTwoResponce%d"), i);
+			FString PromptFragmentTwoPlayerIdKey = FString::Printf(TEXT("promptFragmentTwoPlayerId%d"), i);
 
 		if (ActNumber == 1) {
 
@@ -457,7 +457,7 @@ void ATalkBoxPawn::OnWinnerDisplayed() {
 			JsonObjectAllFragments->SetStringField(PromptFragmentTwoResponceKey, SentenceFragments.SentenceFragmentTwoResponce);
 			JsonObjectAllFragments->SetStringField(PromptFragmentTwoPlayerIdKey, GamePrompts.FragmentTwoPlayerId);
 		}
-
+		
 		if (ActNumber == 2) {
 
 			FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
@@ -470,7 +470,7 @@ void ATalkBoxPawn::OnWinnerDisplayed() {
 		}
 
 		if (ActNumber == 3) {
-
+			
 
 			FEncapsule SentenceFragments = GamePrompts.SentenceFragments;
 			JsonObjectAllFragments->SetStringField(PromptFragmentOneKey, SentenceFragments.SentenceFragmentFive[0] + " " + SentenceFragments.SentenceFragmentFive[1]);
@@ -614,18 +614,8 @@ void ATalkBoxPawn::SendPlayerPole()
 	const FGamePrompt& GamePrompt = AllGamePrompts[ShowResponcesWidgetInstance->index];
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	FEncapsule SentenceFragments = GamePrompt.SentenceFragments;
-	if (ActNumber == 1) {
-		JsonObject->SetStringField("Option1", SentenceFragments.SentenceFragmentOneResponce);
-		JsonObject->SetStringField("Option2", SentenceFragments.SentenceFragmentTwoResponce);
-	}
-	if (ActNumber == 2) {
-		JsonObject->SetStringField("Option1", SentenceFragments.SentenceFragmentThreeResponce);
-		JsonObject->SetStringField("Option2", SentenceFragments.SentenceFragmentFourResponce);
-	}
-	if (ActNumber == 3) {
-		JsonObject->SetStringField("Option1", SentenceFragments.SentenceFragmentFiveResponce);
-		JsonObject->SetStringField("Option2", SentenceFragments.SentenceFragmentSixResponce);
-	}
+	JsonObject->SetStringField("Option1", SentenceFragments.SentenceFragmentOneResponce);
+	JsonObject->SetStringField("Option2", SentenceFragments.SentenceFragmentTwoResponce);
 	GameInstance->SendJsonObject(JsonObject);
 
 	CurrentPoleVoteTotals.Reset();

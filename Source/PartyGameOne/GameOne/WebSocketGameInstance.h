@@ -40,5 +40,5 @@ public:
 	TArray<FGamePrompt> AllGamePrompts;
 	struct IConsoleCommand* Command;
 
-	int32 Difficulty;
+	int32 DifficultyLevel;
 };

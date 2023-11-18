@@ -53,5 +53,5 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> TutorialLevel;
 
-    TMap<int32, int32> PlayerSelectedDifficultySelected;
+    TMap<int32, int32> PlayerSelectedDifficultyMap;
 };

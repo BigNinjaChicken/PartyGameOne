@@ -32,9 +32,32 @@ public:
 public:
 	class UWebSocketGameInstance* GameInstance;
 
-	int32 NumPlayersGettingSelecction;
+	int32 NumPlayersGettingSelection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> TalkBoxActTwoLevel;
 
+	UPROPERTY(EditAnywhere, Category = State)
+	float RandomOffsetMinRange = -0.2f;
+
+	UPROPERTY(EditAnywhere, Category = State)
+	float RandomOffsetMaxRange = 0.2f;
+
+	UPROPERTY(EditAnywhere, Category = State)
+	float SelectSelfValue = 2.0f;
+
+	UPROPERTY(EditAnywhere, Category = State)
+	float SelectOtherPlayerValue = 3.0f;
+
+	UPROPERTY(EditAnywhere, Category = State)
+	float BottomPercentPlayersSelected = 0.3f;
+
+	// Define a map for difficulty level multipliers
+	UPROPERTY(EditAnywhere, Category = State)
+	TMap<int32, float> DifficultyMultipliers = {
+		{1, 0.3f},
+		{2, 0.4f},
+		{3, 0.5f}
+		// Add more difficulty levels and their multipliers as needed
+	};
 };

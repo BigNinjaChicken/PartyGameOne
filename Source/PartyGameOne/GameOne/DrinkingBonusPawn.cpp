@@ -54,11 +54,16 @@ void ADrinkingBonusPawn::BeginPlay()
             return A.Score < B.Score;
         });
 
-    // Calculate the number of players to keep (bottom 30%)
-    NumPlayersGettingSelecction = FMath::CeilToInt(PlayerInfos.Num() * 0.3f);
+    int32 DifficultyLevel = GameInstance->DifficultyLevel;
 
+    // Find the multiplier for the current difficulty level
+    float Multiplier = DifficultyMultipliers.Contains(DifficultyLevel) ? DifficultyMultipliers[DifficultyLevel] : 0.3f;
+
+    // Calculate the number of players to keep
+    NumPlayersGettingSelection = FMath::CeilToInt(PlayerInfos.Num() * Multiplier);
+    
     // Add a warning log to check the number of players to keep
-    UE_LOG(LogTemp, Warning, TEXT("Number of players to keep: %d"), NumPlayersGettingSelecction);
+    UE_LOG(LogTemp, Warning, TEXT("Number of players to keep: %d"), NumPlayersGettingSelection);
 
     // Reset Multipliers
     for (auto& PlayerInfo : GameInstance->AllPlayerInfo) {
@@ -66,7 +71,7 @@ void ADrinkingBonusPawn::BeginPlay()
     }
 
     // Bottom 30% player IDs
-    for (int32 i = 0; i < NumPlayersGettingSelecction; i++)
+    for (int32 i = 0; i < NumPlayersGettingSelection; i++)
     {
         FString PlayerName = PlayerInfos[i].PlayerName;
 
@@ -75,14 +80,14 @@ void ADrinkingBonusPawn::BeginPlay()
 
         int j = 0;
         for (const auto& PlayerInfo : GameInstance->AllPlayerInfo) {
-            float RawRandomOffset = FMath::RandRange(-0.2f, 0.2f);  // Generate a random float value in the range -0.2 to 0.2
+            float RawRandomOffset = FMath::RandRange(RandomOffsetMinRange, RandomOffsetMaxRange);  // Generate a random float value in the range -0.2 to 0.2
             float RoundedRandomOffset = FMath::RoundToFloat(RawRandomOffset * 10.0f) / 10.0f;  // Round to the nearest first decimal point
 
             if (PlayerInfo.Key == PlayerName) {
-                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(2.0f + RoundedRandomOffset));
+                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(SelectSelfValue + RoundedRandomOffset));
             }
             else {
-                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(3.0f + RoundedRandomOffset));
+                JsonObject->SetStringField("PlayerScoreBonusOption" + FString::FromInt(j), FString::SanitizeFloat(SelectOtherPlayerValue + RoundedRandomOffset));
             }
             JsonObject->SetStringField("PlayerName" + FString::FromInt(j), PlayerInfo.Key);
 
@@ -127,8 +132,8 @@ void ADrinkingBonusPawn::ApplySelectedMultiplier(TSharedPtr<FJsonObject> JsonObj
     FDefaultValueHelper::ParseFloat(multiplier, ScoreMultiplierValue);
     GameInstance->AllPlayerInfo[selectedPlayerName].ScoreMultiplier = ScoreMultiplierValue;
 
-    NumPlayersGettingSelecction--;
-    if (NumPlayersGettingSelecction == 0) {
+    NumPlayersGettingSelection--;
+    if (NumPlayersGettingSelection == 0) {
         if (TalkBoxActTwoLevel.IsNull()) {
             UE_LOG(LogTemp, Error, TEXT("Invalid TalkBoxActTwoLevel"));
             return;

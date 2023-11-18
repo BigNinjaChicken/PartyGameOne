@@ -6,6 +6,8 @@
 #include <Dom/JsonObject.h>
 #include <Kismet/GameplayStatics.h>
 #include "WebSocketGameInstance.h"
+#include "ShowResponsesUserWidget.h"
+#include "ScoreboardUserWidget.h"
 
 // Sets default values
 AScoreboardActOnePawn::AScoreboardActOnePawn()
@@ -19,6 +21,56 @@ AScoreboardActOnePawn::AScoreboardActOnePawn()
 void AScoreboardActOnePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+    GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
+    if (!GameInstance) {
+        UE_LOG(LogTemp, Error, TEXT("Failed to get GameInstance"));
+        return;
+    }
+
+    // Step 1: Create and fill an array with pairs of player name and score
+    TArray<TPair<FString, int32>> PlayerScores;
+    for (const TPair<FString, FPlayerInfo>& Player : GameInstance->AllPlayerInfo) {
+        PlayerScores.Emplace(Player.Key, Player.Value.Score);
+    }
+
+    // Step 2: Sort the array based on scores
+    PlayerScores.Sort([](const TPair<FString, int32>& A, const TPair<FString, int32>& B) {
+        return A.Value > B.Value; // Sort in descending order
+        });
+
+    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+
+    TMap<FString, int32> TopPlayerScores;
+    int32 Standing = 1;
+    for (const TPair<FString, int32>& PlayerScore : PlayerScores) {
+        TSharedPtr<FJsonObject> JsonObjectStage = MakeShareable(new FJsonObject);
+        JsonObjectStage->SetNumberField("Stage", 7);
+        JsonObjectStage->SetStringField("playerName", PlayerScore.Key);
+        GameInstance->SendJsonObject(JsonObjectStage);
+
+        JsonObject->SetStringField("playerName", PlayerScore.Key);
+        JsonObject->SetNumberField("playerScore", PlayerScore.Value);
+        JsonObject->SetNumberField("Standing", Standing++);
+
+        // Send the JSON object
+        GameInstance->SendJsonObject(JsonObject);
+
+        if (Standing < 4) TopPlayerScores.Add(PlayerScore.Key, PlayerScore.Value);
+    }
+
+    if (!ScoreboardUserWidget) {
+        UE_LOG(LogTemp, Error, TEXT("Failed to get ScoreboardUserWidget"));
+        return;
+    }
+
+    UUserWidget* CreatedWidgetInstance = CreateWidget(GetWorld(), *ScoreboardUserWidget);
+    CreatedWidgetInstance->AddToViewport();
+    ScoreboardWidgetInstance = Cast<UScoreboardUserWidget>(CreatedWidgetInstance);
+    ScoreboardWidgetInstance->DisplayTopScoreboard(TopPlayerScores);
+
+    
+
 	OpenNextLevel();
 }
 
@@ -36,29 +88,30 @@ void AScoreboardActOnePawn::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
+void AScoreboardActOnePawn::SendStageToPlayer(int StageNumber)
+{
+    TSharedPtr<FJsonObject> JsonObjectStage = MakeShareable(new FJsonObject);
+    JsonObjectStage->SetNumberField("Stage", StageNumber);
+    GameInstance->SendJsonObject(JsonObjectStage);
+}
+
 void AScoreboardActOnePawn::OpenNextLevel()
 {
-	GameInstance = Cast<UWebSocketGameInstance>(GetGameInstance());
-	if (!GameInstance) {
-		UE_LOG(LogTemp, Error, TEXT("Failed to get GameInstance"));
-		return;
-	}
+    UE_LOG(LogTemp, Warning, TEXT("Start Timer"));
+    FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+    TimerManager.SetTimer(TutorialTimerHandle, [this]() {
+        UE_LOG(LogTemp, Warning, TEXT("Finish Timer"));
 
-	UE_LOG(LogTemp, Warning, TEXT("Start Timer"));
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	TimerManager.SetTimer(TutorialTimerHandle, [this]() {
-		UE_LOG(LogTemp, Warning, TEXT("Finish Timer"));
+        SendStageToPlayer(8);
 
-		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-		JsonObject->SetNumberField("Stage", 7);
-		GameInstance->SendJsonObject(JsonObject);
+        if (DrinkingBonusLevel.IsNull()) {
+            UE_LOG(LogTemp, Error, TEXT("Invalid DrinkingBonusLevel"));
+            return;
+        }
 
-		if (DrinkingBonusLevel.IsNull()) {
-			UE_LOG(LogTemp, Error, TEXT("Invalid DrinkingBonusLevel"));
-			return;
-		}
+        // Open next level
+        UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), DrinkingBonusLevel);
 
-		UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), DrinkingBonusLevel);
-
-	}, ScoreboardTime, false);
+    }, ScoreboardTime, false);
 }
+
