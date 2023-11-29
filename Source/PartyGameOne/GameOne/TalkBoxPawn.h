@@ -210,4 +210,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int32 AllPoleStageNumber = 6;
+
+	bool bRoundEnded = false;
 };

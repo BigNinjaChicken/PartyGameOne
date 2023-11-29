@@ -35,7 +35,13 @@ private:
 
     void OnWebSocketRecieveMessage(const FString& MessageString);
 
+    
+
 public:
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void PlayerJoined(const FString& PlayerName);
+
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
@@ -54,4 +60,7 @@ public:
     TSoftObjectPtr<UWorld> TutorialLevel;
 
     TMap<int32, int32> PlayerSelectedDifficultyMap;
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void DisplayChatMessage(const FString& PlayerName, const FString& ChatMessage);
 };

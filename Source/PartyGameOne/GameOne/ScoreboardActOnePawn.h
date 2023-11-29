@@ -26,10 +26,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void SendStageToPlayer(int StageNumber);
+	void SendStageNumToPlayer(int StageNumber);
 
 	UFUNCTION(BlueprintCallable)
-	void OpenNextLevel();
+	void OpenNextLevel(TSoftObjectPtr<UWorld> Level);
 
 	UPROPERTY()
 	FTimerHandle TutorialTimerHandle;
@@ -44,6 +44,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
     TSoftObjectPtr<UWorld> DrinkingBonusLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
+    TSoftObjectPtr<UWorld> TalkBoxLevel;
 
 	UPROPERTY(EditAnywhere, Category = UI)
     TSubclassOf<class UScoreboardUserWidget> ScoreboardUserWidget;

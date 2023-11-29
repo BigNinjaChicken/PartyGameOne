@@ -55,8 +55,8 @@ public:
 	// Define a map for difficulty level multipliers
 	UPROPERTY(EditAnywhere, Category = State)
 	TMap<int32, float> DifficultyMultipliers = {
-		{1, 0.3f},
-		{2, 0.4f},
+		{1, 0.2f},
+		{2, 0.3f},
 		{3, 0.5f}
 		// Add more difficulty levels and their multipliers as needed
 	};

@@ -69,9 +69,12 @@ void AScoreboardActOnePawn::BeginPlay()
     ScoreboardWidgetInstance = Cast<UScoreboardUserWidget>(CreatedWidgetInstance);
     ScoreboardWidgetInstance->DisplayTopScoreboard(TopPlayerScores);
 
-    
-
-	OpenNextLevel();
+    if (GameInstance->DifficultyLevel == 1) {
+        OpenNextLevel(TalkBoxLevel);
+    }
+    else {
+        OpenNextLevel(DrinkingBonusLevel);
+    }
 }
 
 // Called every frame
@@ -88,30 +91,32 @@ void AScoreboardActOnePawn::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
-void AScoreboardActOnePawn::SendStageToPlayer(int StageNumber)
+void AScoreboardActOnePawn::SendStageNumToPlayer(int StageNumber)
 {
     TSharedPtr<FJsonObject> JsonObjectStage = MakeShareable(new FJsonObject);
     JsonObjectStage->SetNumberField("Stage", StageNumber);
     GameInstance->SendJsonObject(JsonObjectStage);
 }
 
-void AScoreboardActOnePawn::OpenNextLevel()
+void AScoreboardActOnePawn::OpenNextLevel(TSoftObjectPtr<UWorld> Level)
 {
     UE_LOG(LogTemp, Warning, TEXT("Start Timer"));
     FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-    TimerManager.SetTimer(TutorialTimerHandle, [this]() {
+
+    TimerManager.SetTimer(TutorialTimerHandle, [this, Level]() {
         UE_LOG(LogTemp, Warning, TEXT("Finish Timer"));
 
-        SendStageToPlayer(8);
+        SendStageNumToPlayer(8);
 
-        if (DrinkingBonusLevel.IsNull()) {
-            UE_LOG(LogTemp, Error, TEXT("Invalid DrinkingBonusLevel"));
+        if (Level.IsNull()) {
+            UE_LOG(LogTemp, Error, TEXT("Invalid Level"));
             return;
         }
 
         // Open next level
-        UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), DrinkingBonusLevel);
+        UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), Level);
 
-    }, ScoreboardTime, false);
+        }, ScoreboardTime, false);
 }
+
 

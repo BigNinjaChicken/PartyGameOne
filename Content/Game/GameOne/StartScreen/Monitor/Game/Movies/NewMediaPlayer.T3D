@@ -1,0 +1,4 @@
+Begin Object Class=/Script/MediaAssets.MediaPlayer Name="NewMediaPlayer" ExportPath="/Script/MediaAssets.MediaPlayer'/Game/Movies/NewMediaPlayer.NewMediaPlayer'"
+   Loop=True
+   PlayerGuid=FA23BA374EEEDAA10EF9F2AA035610EB
+End Object

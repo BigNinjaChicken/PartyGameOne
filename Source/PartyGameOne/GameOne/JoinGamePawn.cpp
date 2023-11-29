@@ -117,6 +117,8 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         }
 
         // Everyone is ready!
+        /*
+        Democracy Voting for difficulty
         int32 AmountSelectedDifficulty = TNumericLimits<int32>::Min();
         int32 VotedDifficulty = 0; 
 
@@ -130,7 +132,20 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         }
 
         GameInstance->DifficultyLevel = VotedDifficulty;
-        UE_LOG(LogTemp, Warning, TEXT("Select difficulty is %d"), VotedDifficulty);
+        */
+
+        // Average Difficulty
+        float VotedDifficulty = 0;
+        float index = 0;
+        for (const auto& SelectedDifficulty : PlayerSelectedDifficultyMap)
+        {
+            index++;
+            VotedDifficulty += SelectedDifficulty.Key;
+            
+        }
+        GameInstance->DifficultyLevel = FMath::RoundToInt(VotedDifficulty / index);
+
+        UE_LOG(LogTemp, Warning, TEXT("Select difficulty is %d"), GameInstance->DifficultyLevel);
 
         if (TutorialLevel.IsNull()) {
             UE_LOG(LogTemp, Error, TEXT("Invalid TutorialLevel"));
@@ -152,10 +167,17 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
             WidgetInstance->AddPlayer(PlayerName);
             PlayerReadyMap.Add(PlayerName, false); // Not Ready Yet
 
+            PlayerJoined(PlayerName);
+
             FPlayerInfo NewPlayerInfo;
             NewPlayerInfo.Score = 0;
             GameInstance->AllPlayerInfo.Add(PlayerName, NewPlayerInfo);
         }
+    }
+
+    FString ChatMessage;
+    if (JsonObject->TryGetStringField(TEXT("ChatMessage"), ChatMessage)) {
+        DisplayChatMessage(PlayerName, ChatMessage);
     }
 }
 

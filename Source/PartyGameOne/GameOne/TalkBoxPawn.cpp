@@ -7,6 +7,7 @@
 #include "ShowResponsesUserWidget.h"
 #include <Kismet/GameplayStatics.h>
 #include "ShowAllGoupResponsesUserWidget.h"
+#include <cmath>
 
 // Sets default values
 ATalkBoxPawn::ATalkBoxPawn()
@@ -70,7 +71,8 @@ void ATalkBoxPawn::BeginPlay()
 
 	for (auto Player : GameInstance->AllPlayerInfo) {
 		TSharedPtr<FJsonObject> JsonObjectTime = MakeShareable(new FJsonObject);
-		JsonObjectTime->SetStringField("Timer", FString::FromInt(InputPromptTime / Player.Value.ScoreMultiplier));
+		int32 TimeDecreaseBasedOnScore = log(Player.Value.ScoreMultiplier) + 1;
+		JsonObjectTime->SetStringField("Timer", FString::FromInt(InputPromptTime / TimeDecreaseBasedOnScore));
 		JsonObjectTime->SetStringField("playerName", Player.Key);
 		GameInstance->SendJsonObject(JsonObjectTime);
 	}
@@ -224,6 +226,12 @@ void ATalkBoxPawn::SendPlayersSentenceFragments() {
 }
 
 void ATalkBoxPawn::EndRound() {
+	if (bRoundEnded) {
+		UE_LOG(LogTemp, Warning, TEXT("Extra EndRound() Call"));
+		return;
+	}
+	bRoundEnded = true;
+
 	GetWorld()->GetTimerManager().ClearTimer(GameTimerHandle);
 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);

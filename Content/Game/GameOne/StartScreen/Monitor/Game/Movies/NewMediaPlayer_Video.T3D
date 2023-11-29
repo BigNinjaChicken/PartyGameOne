@@ -1,0 +1,13 @@
+Begin Object Class=/Script/MediaAssets.MediaTexture Name="NewMediaPlayer_Video" ExportPath="/Script/MediaAssets.MediaTexture'/Game/Movies/NewMediaPlayer_Video.NewMediaPlayer_Video'"
+   Begin Object Class=/Script/Engine.AssetImportData Name="AssetImportData" ExportPath="/Script/Engine.AssetImportData'/Game/Movies/NewMediaPlayer_Video.NewMediaPlayer_Video:AssetImportData'"
+   End Object
+   Begin Object Name="AssetImportData" ExportPath="/Script/Engine.AssetImportData'/Game/Movies/NewMediaPlayer_Video.NewMediaPlayer_Video:AssetImportData'"
+   End Object
+   NewStyleOutput=True
+   MediaPlayer="/Script/MediaAssets.MediaPlayer'/Game/Movies/NewMediaPlayer.NewMediaPlayer'"
+   Source=(BlockDataOffsets=(0))
+   LightingGuid=315441DE40B8F4844DC1B6B6CF144B13
+   AssetImportData="/Script/Engine.AssetImportData'AssetImportData'"
+   OodleTextureSdkVersion="2.9.10"
+   CustomProperties TextureSourceData PayloadSize=0 
+End Object

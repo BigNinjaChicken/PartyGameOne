@@ -1,0 +1,3 @@
+Begin Object Class=/Script/MediaAssets.FileMediaSource Name="Video" ExportPath="/Script/MediaAssets.FileMediaSource'/Game/Movies/Video.Video'"
+   FilePath="./Movies/ezgif.com-gif-maker.mp4"
+End Object

@@ -40,5 +40,6 @@ public:
 	TArray<FGamePrompt> AllGamePrompts;
 	struct IConsoleCommand* Command;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 DifficultyLevel;
 };
