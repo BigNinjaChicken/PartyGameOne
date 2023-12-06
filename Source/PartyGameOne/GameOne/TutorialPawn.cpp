@@ -29,7 +29,7 @@ void ATutorialPawn::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(TutorialTimerHandle, this, &ATutorialPawn::StartGame, TutorialTotalTime, false);
 
 	TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-	JsonObject->SetStringField("Stage", "Tutorial");
+	JsonObject->SetNumberField("Stage", TutorialStageNum);
 	GameInstance->SendJsonObject(JsonObject);
 
 	if (bSkipTutorial) {

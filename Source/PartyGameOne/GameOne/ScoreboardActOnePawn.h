@@ -26,7 +26,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void SendStageNumToPlayer(int StageNumber);
+	void SendStageNumToPlayer();
 
 	UFUNCTION(BlueprintCallable)
 	void OpenNextLevel(TSoftObjectPtr<UWorld> Level);
@@ -35,10 +35,13 @@ public:
 	FTimerHandle TutorialTimerHandle;
 
 	UPROPERTY(EditAnywhere)
-	float ScoreboardTime = 5.0f;
+	float ScoreboardTime = 7.0f;
 
 	UPROPERTY(EditAnywhere)
 	int32 ScoreboardStageNumber = 7;
+
+	UPROPERTY(EditAnywhere)
+	int32 NextStageNumber = 8;
 
 	class UWebSocketGameInstance* GameInstance;
 

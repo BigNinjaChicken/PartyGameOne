@@ -74,6 +74,7 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         return;
     }
 
+    /*
     int32 difficultySelected;
     if (JsonObject->TryGetNumberField(TEXT("difficultySelected"), difficultySelected)) {
         // Check if the difficultySelected key exists in the map
@@ -86,6 +87,7 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
             PlayerSelectedDifficultyMap.Add(difficultySelected, 1);
         }
     }
+    */
 
     // Ready Up
     bool bIsReady;
@@ -135,6 +137,7 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         */
 
         // Average Difficulty
+        /*
         float VotedDifficulty = 0;
         float index = 0;
         for (const auto& SelectedDifficulty : PlayerSelectedDifficultyMap)
@@ -146,6 +149,7 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
         GameInstance->DifficultyLevel = FMath::RoundToInt(VotedDifficulty / index);
 
         UE_LOG(LogTemp, Warning, TEXT("Select difficulty is %d"), GameInstance->DifficultyLevel);
+        */
 
         if (TutorialLevel.IsNull()) {
             UE_LOG(LogTemp, Error, TEXT("Invalid TutorialLevel"));
@@ -154,6 +158,7 @@ void AJoinGamePawn::OnWebSocketRecieveMessage(const FString& MessageString)
 
         UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), TutorialLevel);
         return;
+        
     }
 
     bool bJoinedGame;

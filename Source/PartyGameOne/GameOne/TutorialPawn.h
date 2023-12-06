@@ -42,4 +42,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	bool bSkipTutorial;
+
+	UPROPERTY(EditAnywhere)
+	int32 TutorialStageNum = 3;
 };

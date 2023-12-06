@@ -71,8 +71,8 @@ void ATalkBoxPawn::BeginPlay()
 
 	for (auto Player : GameInstance->AllPlayerInfo) {
 		TSharedPtr<FJsonObject> JsonObjectTime = MakeShareable(new FJsonObject);
-		int32 TimeDecreaseBasedOnScore = log(Player.Value.ScoreMultiplier) + 1;
-		JsonObjectTime->SetStringField("Timer", FString::FromInt(InputPromptTime / TimeDecreaseBasedOnScore));
+		float TimeDecreaseBasedOnScore = log(Player.Value.ScoreMultiplier - 0.4f) + 1.0f;
+		JsonObjectTime->SetStringField("Timer", FString::SanitizeFloat(InputPromptTime / TimeDecreaseBasedOnScore));
 		JsonObjectTime->SetStringField("playerName", Player.Key);
 		GameInstance->SendJsonObject(JsonObjectTime);
 	}

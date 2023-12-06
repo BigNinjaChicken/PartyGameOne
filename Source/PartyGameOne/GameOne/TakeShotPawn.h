@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "TakeShotPawn.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEveryoneReady);
+
 UCLASS()
 class PARTYGAMEONE_API ATakeShotPawn : public APawn
 {
@@ -20,6 +22,10 @@ protected:
 	virtual void BeginPlay() override;
 
 	void OnWebSocketRecieveMessage(const FString& MessageString);
+
+	UFUNCTION(BlueprintCallable)
+	void OpenNextLevel();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -43,4 +49,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = State)
 	int ClientStage = 9;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, EditAnywhere, Category = "Events")
+	FOnEveryoneReady OnEveryoneReady;
 };

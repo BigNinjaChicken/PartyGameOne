@@ -172,7 +172,7 @@ public:
 	TArray<FString> AllPlayerIds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
-	float InputPromptTime = 50.0f;
+	float InputPromptTime = 70.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = State)
 	float InputPromptSafetyTime = 2.0f;

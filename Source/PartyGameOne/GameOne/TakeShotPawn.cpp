@@ -90,17 +90,22 @@ void ATakeShotPawn::OnWebSocketRecieveMessage(const FString& MessageString) {
 
 		// Everyone is ready
 		if (PlayerAmountRecivedMult == 0) {
-			if (NextLevel.IsNull()) {
-				UE_LOG(LogTemp, Error, TEXT("Invalid NextLevel"));
-				return;
-			}
-			UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), NextLevel);
+			OnEveryoneReady.Broadcast();
 			return;
 		}
 	}
 	else {
 		PlayerAmountRecivedMult++;
 	}
+}
+
+void ATakeShotPawn::OpenNextLevel()
+{
+	if (NextLevel.IsNull()) {
+		UE_LOG(LogTemp, Error, TEXT("Invalid NextLevel"));
+		return;
+	}
+	UGameplayStatics::OpenLevelBySoftObjectPtr(GetWorld(), NextLevel);
 }
 
 // Called every frame

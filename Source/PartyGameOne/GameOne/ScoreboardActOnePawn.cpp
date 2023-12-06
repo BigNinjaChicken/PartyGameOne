@@ -91,10 +91,10 @@ void AScoreboardActOnePawn::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 }
 
-void AScoreboardActOnePawn::SendStageNumToPlayer(int StageNumber)
+void AScoreboardActOnePawn::SendStageNumToPlayer()
 {
     TSharedPtr<FJsonObject> JsonObjectStage = MakeShareable(new FJsonObject);
-    JsonObjectStage->SetNumberField("Stage", StageNumber);
+    JsonObjectStage->SetNumberField("Stage", NextStageNumber);
     GameInstance->SendJsonObject(JsonObjectStage);
 }
 
@@ -106,7 +106,7 @@ void AScoreboardActOnePawn::OpenNextLevel(TSoftObjectPtr<UWorld> Level)
     TimerManager.SetTimer(TutorialTimerHandle, [this, Level]() {
         UE_LOG(LogTemp, Warning, TEXT("Finish Timer"));
 
-        SendStageNumToPlayer(8);
+        SendStageNumToPlayer();
 
         if (Level.IsNull()) {
             UE_LOG(LogTemp, Error, TEXT("Invalid Level"));
